@@ -10,3 +10,4 @@ C:\Users\Sichi\Source\Repos\DAWindower\obj\Debug\DAWindower.csproj.GenerateResou
 C:\Users\Sichi\Source\Repos\DAWindower\obj\Debug\DAWindower.csproj.CoreCompileInputs.cache
 C:\Users\Sichi\Source\Repos\DAWindower\obj\Debug\DAWindower.exe
 C:\Users\Sichi\Source\Repos\DAWindower\obj\Debug\DAWindower.pdb
+C:\Users\Sichi\Source\Repos\DAWindower\obj\Debug\DAWindower.MessageDialog.resources

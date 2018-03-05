@@ -2,12 +2,12 @@
 {
     partial class Thumbnail
     {
-        /// <summary> 
+        /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -20,10 +20,10 @@
             base.Dispose(disposing);
         }
 
-        #region Component Designer generated code
+        #region Windows Form Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
+        /// <summary>
+        /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
@@ -43,8 +43,8 @@
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.menuStrip.Size = new System.Drawing.Size(237, 24);
-            this.menuStrip.TabIndex = 3;
+            this.menuStrip.Size = new System.Drawing.Size(205, 24);
+            this.menuStrip.TabIndex = 6;
             this.menuStrip.Text = "menuStrip1";
             // 
             // exitButton
@@ -64,10 +64,10 @@
             this.windowTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.windowTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.windowTitle.ForeColor = System.Drawing.Color.White;
-            this.windowTitle.Location = new System.Drawing.Point(6, 5);
+            this.windowTitle.Location = new System.Drawing.Point(4, 5);
             this.windowTitle.Name = "windowTitle";
             this.windowTitle.Size = new System.Drawing.Size(124, 13);
-            this.windowTitle.TabIndex = 5;
+            this.windowTitle.TabIndex = 8;
             this.windowTitle.Text = "CLICK ME TO NAME";
             this.windowTitle.Click += new System.EventHandler(this.windowTitle_Click);
             // 
@@ -76,28 +76,36 @@
             this.hdnLbl.AutoSize = true;
             this.hdnLbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.hdnLbl.ForeColor = System.Drawing.Color.White;
-            this.hdnLbl.Location = new System.Drawing.Point(40, 75);
+            this.hdnLbl.Location = new System.Drawing.Point(21, 70);
             this.hdnLbl.Name = "hdnLbl";
             this.hdnLbl.Size = new System.Drawing.Size(162, 62);
-            this.hdnLbl.TabIndex = 4;
+            this.hdnLbl.TabIndex = 7;
             this.hdnLbl.Text = "WINDOW\r\nIS HIDDEN";
             this.hdnLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.hdnLbl.Visible = false;
             // 
-            // Thumbnail
+            // Thumb
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.Black;
-            this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ClientSize = new System.Drawing.Size(205, 188);
+            this.ControlBox = false;
             this.Controls.Add(this.windowTitle);
             this.Controls.Add(this.hdnLbl);
             this.Controls.Add(this.menuStrip);
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.White;
-            this.Name = "Thumbnail";
-            this.Size = new System.Drawing.Size(237, 207);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "Thumb";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.TopMost = true;
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);

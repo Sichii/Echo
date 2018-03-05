@@ -3,11 +3,12 @@
 namespace DAWindower
 {
     [Flags]
-    internal enum WaitEventResult
+    internal enum WaitEventResult : uint
     {
         Signaled = 0,
         Abandoned = 128,
         Timeout = 258,
+        Failed = uint.MaxValue
     }
 
     [Flags]
@@ -25,7 +26,8 @@ namespace DAWindower
         SetInformation = 512,
         QueryInformation = 1024,
         SuspendResume = 2048,
-        QueryLimitedInformation = 4096
+        QueryLimitedInformation = 4096,
+        FullAccess = 2035711
     }
 
     [Flags]
@@ -50,7 +52,7 @@ namespace DAWindower
     }
 
     [Flags]
-    internal enum ThumbnailFlags
+    internal enum ThumbnailFlags : int
     {
         RectDestination = 1,
         Opacity = 4,

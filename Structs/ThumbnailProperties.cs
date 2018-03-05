@@ -5,7 +5,7 @@ namespace DAWindower
     [StructLayout(LayoutKind.Sequential)]
     internal struct ThumbnailProperties
     {
-        public int Flags;
+        public ThumbnailFlags Flags;
         public Rect DestinationRect;
         public Rect SourceRect;
         public byte Opacity;
