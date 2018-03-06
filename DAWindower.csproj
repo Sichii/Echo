@@ -46,12 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Flags.cs" />
-    <Compile Include="Forms\Thumbnail.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\Thumbnail.Designer.cs">
-      <DependentUpon>Thumbnail.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\InputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -70,6 +64,12 @@
     <Compile Include="Forms\MessageDialog.Designer.cs">
       <DependentUpon>MessageDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Thumbnail.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Thumbnail.Designer.cs">
+      <DependentUpon>Thumbnail.cs</DependentUpon>
+    </Compile>
     <Compile Include="PInvoke\Dwmapi.cs" />
     <Compile Include="PInvoke\Kernel32.cs" />
     <Compile Include="PInvoke\User32.cs" />
@@ -83,9 +83,6 @@
     <Compile Include="Structs\StartInfo.cs" />
     <Compile Include="Structs\ThumbnailSize.cs" />
     <Compile Include="Structs\ThumbnailProperties.cs" />
-    <EmbeddedResource Include="Forms\Thumbnail.resx">
-      <DependentUpon>Thumbnail.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\InputDialog.resx">
       <DependentUpon>InputDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -94,6 +91,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MessageDialog.resx">
       <DependentUpon>MessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Thumbnail.resx">
+      <DependentUpon>Thumbnail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DAWindower
 {
@@ -16,7 +12,7 @@ namespace DAWindower
         [DllImport("user32.dll")]
         internal static extern bool GetClientRect(IntPtr hWnd, ref Rect rectangle);
         [DllImport("user32.dll")]
-        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        internal static extern WindowStyleFlags GetWindowLong(IntPtr hWnd, WindowFlags nIndex);
         [DllImport("user32.dll")]
         internal static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll")]
@@ -29,7 +25,7 @@ namespace DAWindower
         [DllImport("user32.dll")]
         internal static extern int SetWindowText(IntPtr hWnd, string text);
         [DllImport("user32.dll")]
-        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        internal static extern int SetWindowLong(IntPtr hWnd, WindowFlags nIndex, WindowStyleFlags dwNewLong);
         [DllImport("user32.dll")]
         internal static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
         [DllImport("User32.dll")]
@@ -38,10 +34,10 @@ namespace DAWindower
 
         #region WindowMethods
         [DllImport("user32.dll")]
-        internal static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+        internal static extern bool ShowWindowAsync(IntPtr hWnd, ShowWindowFlags nCmdShow);
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
+        internal static extern bool ShowWindow(IntPtr hWnd, ShowWindowFlags nCmdShow);
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hwnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]

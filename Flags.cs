@@ -61,4 +61,61 @@ namespace DAWindower
         SourceClientAreaOnly = 16,
         All = RectDestination | RectSource | Opacity | Visible | SourceClientAreaOnly
     }
+
+    [Flags]
+    internal enum WindowStyleFlags : uint
+    {   //  14CE
+        //0x14CF0000
+        Border = 0x00800000,
+        Caption = 0x00C00000,
+        Child = 0x40000000,
+        ClipChildren = 0x02000000,
+        ClipSiblings = 0x04000000,
+        Disabled = 0x08000000,
+        DialogFrame = 0x00400000,
+        Group = 0x00020000,
+        HorizontalScroll = 0x00100000,
+        VerticalScroll = 0x00200000,
+        Minimized = 0x20000000,
+        Maximized = 0x01000000,
+        MaximizeBox = 0x00010000,
+        MinimizeBox = 0x00020000,
+        Overlapped = 0x00000000,
+        OverlappedWindow = Overlapped | Caption | SystemMenu | Sizeable | MinimizeBox | MaximizeBox | Visible,
+        Popup = 0x80000000,
+        PopupWindow = Popup | Border | SystemMenu | Visible,
+        Sizeable = 0x00040000,
+        SystemMenu = 0x00080000,
+        TabStop = 0x00010000,
+        Visible = 0x10000000
+    }
+
+    [Flags]
+    internal enum WindowFlags : int
+    {
+        None = 0,
+        WndProc = -4,
+        InstanceHandle = -6,
+        ID = -12,
+        Style = -16,
+        ExtendedStyle = -20,
+        UserData = -21
+    }
+
+    [Flags]
+    internal enum ShowWindowFlags : int
+    {
+        Hide = 0,
+        ActiveNormal = 1,
+        ActiveMinimized = 2,
+        ActiveMaximized = 3,
+        InactiveNormal = 4,
+        ActiveShow = 5,
+        MinimizeNext = 6,
+        InactiveMinimized = 7,
+        InactiveShow = 8,
+        ActiveRestore = 9,
+        Default = 10,
+        ForceMinimized = 11,
+    }
 }

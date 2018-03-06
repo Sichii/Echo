@@ -91,6 +91,7 @@
             this.Name = "InputDialog";
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "InputDialog";
             this.ResumeLayout(false);
             this.PerformLayout();

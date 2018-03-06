@@ -1,27 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace DAWindower
 {
     public partial class MainForm : Form
     {
+        private Thread ClientHandlerThread;
         private List<Client> Clients;
 
         public MainForm()
         {
             Clients = new List<Client>();
             InitializeComponent();
+            ClientHandlerThread = new Thread(new ThreadStart(HandleClients));
+            ClientHandlerThread.Start();
         }
 
         private void LaunchDA(object sender, EventArgs e)
@@ -40,28 +38,52 @@ namespace DAWindower
             if (!File.Exists($@"{dir}dawnd.dll"))
                 File.WriteAllBytes($@"{dir}dawnd.dll", Properties.Resources.dawnd);
 
-            //create a da process, inject, add the client to our list
+            //create a da process
             StartInfo startupInfo = new StartInfo();
             ProcInfo procInfo = new ProcInfo();
 
             startupInfo.Size = Marshal.SizeOf(startupInfo);
             Kernel32.CreateProcess($@"{dir}Darkages.exe", null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
 
+            //open an access handle to this process
             IntPtr hProcess = Kernel32.OpenProcess(ProcessAccessFlags.FullAccess, true, procInfo.ProcessId);
+            //inject dawnd
             InjectDLL(hProcess);
 
+            //resume process thread
             Kernel32.ResumeThread(procInfo.ThreadHandle);
 
+            //create client from this process
             Client client = new Client(this, procInfo.ProcessId);
             Clients.Add(client);
 
+            //wait till window is shown
             Process p = Process.GetProcessById(procInfo.ProcessId);
             while (p.MainWindowHandle == IntPtr.Zero)
                 Thread.Sleep(10);
 
+            //get inner and outer rect, so we can figure out the title height and border width
+            //the inner window needs to have the correct aspect ratio, not the outer
+            User32.GetClientRect(p.MainWindowHandle, ref client.ClientRect);
+            User32.GetWindowRect(p.MainWindowHandle, ref client.WindowRect);
 
+            bool smallOpt = small.Checked;
+            bool largeOpt = large.Checked;
+            bool fullOpt = fullscreen.Checked;
 
-            //generate and show the thumbnail
+            if (fullOpt)
+            {
+                //set window to simply visible : not title bar, resizing, border/frame, etc
+                User32.SetWindowLong(p.MainWindowHandle, WindowFlags.Style, WindowStyleFlags.Visible);
+                //maximize the window and activate it
+                User32.ShowWindowAsync(p.MainWindowHandle, ShowWindowFlags.ActiveMaximized);
+            }
+            else if (largeOpt)
+                User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
+
+            thumbTbl.Controls.Add(client.Thumb, -1, -1);
+            client.Thumb.GenerateThumbnail();
+            client.Thumb.Visible = true;
             client.Thumb.Show();
         }
 
@@ -124,6 +146,59 @@ namespace DAWindower
             return true;
         }
 
+        internal void HandleClients()
+        {
+            while (!Visible)
+                Thread.Sleep(10);
+
+            while (Visible)
+            {
+                List<Client> currentClients = Clients.ToList();
+                List<int> notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
+                if (notRunning.Count > 0)
+                {
+                    foreach (Client client in currentClients)
+                        if (notRunning.Contains(client.ProcId))
+                            client.Thumb.DestroyThumbnail(false, false);
+
+                    RefreshThumbnails();
+                }
+                Thread.Sleep(250);
+            }
+
+            return;
+        }
+
+        internal void RefreshThumbnails()
+        {
+            if (InvokeRequired)
+                Invoke((Action)(() => RefreshThumbnails()));
+            else
+            {
+                lock (Clients)
+                {
+                    thumbTbl.Controls.Clear();
+
+                    while (thumbTbl.Controls.Count > 0)
+                        Thread.Sleep(1);
+
+                    foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
+                    {
+                        thumbTbl.Controls.Add(thumb, -1, -1);
+                        thumb.UpdateThumbnail();
+                    }
+                }
+            }
+        }
+
+        internal void RemoveClient(Client client)
+        {
+            lock (Clients)
+            {
+                Clients.Remove(client);
+            }
+        }
+
         private void DropDownCheck(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
@@ -133,6 +208,24 @@ namespace DAWindower
             fullscreen.Checked = false;
 
             item.Checked = true;
+        }
+
+        private void toggleHideToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (Client cli in Clients)
+                cli.Resize(0, 0, true);
+        }
+
+        private void smallToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (Client cli in Clients)
+                cli.Resize(640, 480);
+        }
+
+        private void largeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (Client cli in Clients)
+                cli.Resize(1280, 960);
         }
     }
 }
