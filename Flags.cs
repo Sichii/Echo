@@ -55,7 +55,10 @@ namespace DAWindower
     internal enum ThumbnailFlags : int
     {
         RectDestination = 1,
+        RectSource = 2,
         Opacity = 4,
-        Visible = 8
+        Visible = 8,
+        SourceClientAreaOnly = 16,
+        All = RectDestination | RectSource | Opacity | Visible | SourceClientAreaOnly
     }
 }

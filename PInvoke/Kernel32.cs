@@ -10,6 +10,12 @@ namespace DAWindower
 {
     internal static class Kernel32
     {
+
+        [DllImport("kernel32.dll")]
+        internal static extern bool CreateProcess(string applicationName, string commandLine, IntPtr processAttributes, IntPtr threadAttributes, bool inheritHandles, ProcessCreationFlags creationFlags, IntPtr environment, string currentDirectory, ref StartInfo startupInfo, out ProcInfo processInfo);
+
+
+
         [DllImport("kernel32.dll")]
         internal static extern bool CloseHandle(IntPtr handle);
         [DllImport("kernel32.dll")]

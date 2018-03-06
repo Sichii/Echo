@@ -38,7 +38,7 @@
             this.messageLbl.Dock = System.Windows.Forms.DockStyle.Top;
             this.messageLbl.Location = new System.Drawing.Point(0, 0);
             this.messageLbl.Name = "messageLbl";
-            this.messageLbl.Size = new System.Drawing.Size(284, 47);
+            this.messageLbl.Size = new System.Drawing.Size(291, 47);
             this.messageLbl.TabIndex = 10;
             this.messageLbl.Text = "This is where you put text";
             this.messageLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -48,7 +48,7 @@
             this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cancelBtn.Location = new System.Drawing.Point(197, 51);
+            this.cancelBtn.Location = new System.Drawing.Point(204, 51);
             this.cancelBtn.Name = "cancelBtn";
             this.cancelBtn.Size = new System.Drawing.Size(75, 23);
             this.cancelBtn.TabIndex = 9;
@@ -69,21 +69,26 @@
             // 
             // MessageDialog
             // 
+            this.AcceptButton = this.okBtn;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(284, 86);
+            this.ClientSize = new System.Drawing.Size(291, 86);
             this.Controls.Add(this.messageLbl);
             this.Controls.Add(this.cancelBtn);
             this.Controls.Add(this.okBtn);
+            this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.Black;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MessageDialog";
+            this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "MessageDialog";
+            this.TopMost = true;
             this.ResumeLayout(false);
 
         }
