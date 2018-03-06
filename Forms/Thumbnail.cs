@@ -12,10 +12,9 @@ namespace DAWindower
 {
     internal partial class Thumbnail : UserControl
     {
-        private bool Generated = false;
         private MainForm MainForm;
         private Client Client;
-        private IntPtr tHandle = new IntPtr();
+        private IntPtr tHandle;
 
         internal Thumbnail(MainForm mainForm, Client client)
         {
@@ -24,11 +23,13 @@ namespace DAWindower
             InitializeComponent();
         }
 
-        internal bool GenerateThumbnail()
+        internal bool CreateT()
         {
-            int x = Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle);
+            IntPtr Handle = Client.MainHandle;
+
+            int x = Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Handle, out tHandle);
             //attempt to register this darkages process to a thumbnail, 0 for success
-            if (Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle) == 0)
+            if (Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Handle, out tHandle) == 0)
             {
                 //create a new thumbnail properties struct and set properties/location/size/etc
                 ThumbnailProperties tProperties = new ThumbnailProperties();
@@ -53,10 +54,10 @@ namespace DAWindower
                 return false;
         }
 
-        internal void UpdateThumbnail()
+        internal void UpdateT()
         {
             Dwmapi.DwmUnregisterThumbnail(tHandle);
-            GenerateThumbnail();
+            CreateT();
         }
 
         private void windowTitle_Click(object sender, EventArgs e)
@@ -96,8 +97,19 @@ namespace DAWindower
 
         private void Thumbnail_Click(object sender, EventArgs e)
         {
+            if (!User32.IsWindowVisible(Client.MainHandle))
+            {
+                Client.State &= ~ClientState.Hidden;
+                User32.ShowWindow(Client.HiddenHandle, ShowWindowFlags.ActiveShow);
+                UpdateT();
+                hiddenFsLbl.Visible = false;
+            }
+            else if (Client.State.HasFlag(ClientState.Fullscreen))
+                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
+            else
+                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
+
             User32.SetForegroundWindow((int)Client.MainHandle);
-            User32.ShowWindow(Client.MainHandle, ShowWindowFlags.ActiveShow);
         }
 
         private void exitBtn_Click(object sender, EventArgs e)

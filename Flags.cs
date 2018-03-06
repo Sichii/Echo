@@ -118,4 +118,13 @@ namespace DAWindower
         Default = 10,
         ForceMinimized = 11,
     }
+
+    [Flags]
+    internal enum ClientState
+    {
+        Hidden = 1,
+        Minimized = 2,
+        Normal = 4,
+        Fullscreen = 8
+    }
 }

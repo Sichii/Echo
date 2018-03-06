@@ -36,6 +36,7 @@
             this.large = new System.Windows.Forms.ToolStripMenuItem();
             this.fullscreen = new System.Windows.Forms.ToolStripMenuItem();
             this.windowTitleLbl = new System.Windows.Forms.ToolStripMenuItem();
+            this.hiddenFsLbl = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,16 +50,16 @@
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Padding = new System.Windows.Forms.Padding(0);
-            this.menuStrip.Size = new System.Drawing.Size(198, 24);
+            this.menuStrip.Size = new System.Drawing.Size(200, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
-            // closeBtn
+            // exitBtn
             // 
             this.exitBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.exitBtn.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.exitBtn.ForeColor = System.Drawing.Color.Red;
-            this.exitBtn.Name = "closeBtn";
+            this.exitBtn.Name = "exitBtn";
             this.exitBtn.Padding = new System.Windows.Forms.Padding(0);
             this.exitBtn.Size = new System.Drawing.Size(24, 24);
             this.exitBtn.Text = "╳";
@@ -125,20 +126,39 @@
             this.windowTitleLbl.Text = "CLICK ME TO RENAME";
             this.windowTitleLbl.Click += new System.EventHandler(this.windowTitle_Click);
             // 
+            // hiddenFsLbl
+            // 
+            this.hiddenFsLbl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hiddenFsLbl.AutoSize = true;
+            this.hiddenFsLbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hiddenFsLbl.ForeColor = System.Drawing.Color.Black;
+            this.hiddenFsLbl.Location = new System.Drawing.Point(32, 67);
+            this.hiddenFsLbl.Name = "hiddenFsLbl";
+            this.hiddenFsLbl.Size = new System.Drawing.Size(135, 50);
+            this.hiddenFsLbl.TabIndex = 1;
+            this.hiddenFsLbl.Text = "CANNOT\r\nGENERATE";
+            this.hiddenFsLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.hiddenFsLbl.Visible = false;
+            this.hiddenFsLbl.Click += new System.EventHandler(this.Thumbnail_Click);
+            // 
             // Thumbnail
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.Transparent;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Controls.Add(this.hiddenFsLbl);
             this.Controls.Add(this.menuStrip);
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.White;
             this.Margin = new System.Windows.Forms.Padding(0);
             this.MinimumSize = new System.Drawing.Size(200, 175);
             this.Name = "Thumbnail";
-            this.Size = new System.Drawing.Size(198, 173);
+            this.Size = new System.Drawing.Size(200, 175);
             this.Click += new System.EventHandler(this.Thumbnail_Click);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
@@ -157,5 +177,6 @@
         private System.Windows.Forms.ToolStripMenuItem small;
         private System.Windows.Forms.ToolStripMenuItem large;
         private System.Windows.Forms.ToolStripMenuItem fullscreen;
+        internal System.Windows.Forms.Label hiddenFsLbl;
     }
 }

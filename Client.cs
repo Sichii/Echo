@@ -11,6 +11,7 @@ namespace DAWindower
         internal Thumbnail Thumb;
         internal Rect ClientRect;
         internal Rect WindowRect;
+        internal ClientState State;
         internal int TitleHeight => WindowRect.Height - ClientRect.Height;
         internal int BorderWidth => WindowRect.Width - ClientRect.Width;
 
@@ -36,29 +37,49 @@ namespace DAWindower
             {
                 if (!User32.IsWindowVisible(MainHandle))
                 {
-                    User32.ShowWindow(HiddenHandle, ShowWindowFlags.ActiveNormal);
+                    State &= ~ClientState.Hidden;
+                    User32.ShowWindow(HiddenHandle, ShowWindowFlags.ActiveShow);
                     //the mainwindowhandle changes here, so we need to update the thumbnail
-                    Thumb.UpdateThumbnail();
+                    Thumb.UpdateT();
+                    Thumb.hiddenFsLbl.Visible = false;
                 }
                 else
                 {
+                    State |= ClientState.Hidden;
                     HiddenHandle = MainHandle;
                     User32.ShowWindow(MainHandle, ShowWindowFlags.Hide);
+
+                    if (State.HasFlag(ClientState.Fullscreen))
+                    {
+                        Thumb.UpdateT();
+                        Thumb.hiddenFsLbl.Visible = true;
+                    }
                 }
 
                 return;
             }//if not toggling hide, then unhide the client if it is hidden
             else if (!User32.IsWindowVisible(MainHandle))
-                User32.ShowWindow(MainHandle, ShowWindowFlags.ActiveNormal);
+            {
+                State &= ~ClientState.Hidden;
+                User32.ShowWindowAsync(HiddenHandle, ShowWindowFlags.ActiveShow);
 
+                Thumb.UpdateT();
+                Thumb.hiddenFsLbl.Visible = false;
+            }
 
             if (fullScreen)
             {   //set borderless windowed fullscreen
+                State &= ~ClientState.Normal;
+                State |= ClientState.Fullscreen;
+
                 User32.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.Visible);
                 User32.ShowWindowAsync(MainHandle, ShowWindowFlags.ActiveMaximized);
             }
             else
             {
+                State &= ~ClientState.Fullscreen;
+                State |= ClientState.Normal;
+
                 if (!(User32.GetWindowLong(MainHandle, WindowFlags.Style).HasFlag(WindowStyleFlags.Caption)))
                     User32.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.OverlappedWindow);
 

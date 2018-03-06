@@ -73,16 +73,22 @@ namespace DAWindower
 
             if (fullOpt)
             {
+                client.State |= ClientState.Fullscreen;
                 //set window to simply visible : not title bar, resizing, border/frame, etc
                 User32.SetWindowLong(p.MainWindowHandle, WindowFlags.Style, WindowStyleFlags.Visible);
                 //maximize the window and activate it
                 User32.ShowWindowAsync(p.MainWindowHandle, ShowWindowFlags.ActiveMaximized);
             }
             else if (largeOpt)
+            {
+                client.State |= ClientState.Normal;
                 User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
+            }
+            else
+                client.State |= ClientState.Normal;
 
             thumbTbl.Controls.Add(client.Thumb, -1, -1);
-            client.Thumb.GenerateThumbnail();
+            client.Thumb.CreateT();
             client.Thumb.Visible = true;
             client.Thumb.Show();
         }
@@ -177,16 +183,8 @@ namespace DAWindower
             {
                 lock (Clients)
                 {
-                    thumbTbl.Controls.Clear();
-
-                    while (thumbTbl.Controls.Count > 0)
-                        Thread.Sleep(1);
-
                     foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
-                    {
-                        thumbTbl.Controls.Add(thumb, -1, -1);
-                        thumb.UpdateThumbnail();
-                    }
+                        thumb.UpdateT();
                 }
             }
         }
