@@ -38,14 +38,14 @@
             this.toggleHideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.smallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.largeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
             this.cascade = new System.Windows.Forms.ToolStripMenuItem();
             this.allVisible = new System.Windows.Forms.ToolStripMenuItem();
             this.commander = new System.Windows.Forms.ToolStripMenuItem();
             this.placeholderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.monitors = new System.Windows.Forms.ToolStripMenuItem();
-            this.thumbTbl = new System.Windows.Forms.TableLayoutPanel();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
+            this.thumbTbl = new System.Windows.Forms.TableLayoutPanel();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -54,18 +54,12 @@
             this.menuStrip1.AllowMerge = false;
             this.menuStrip1.BackColor = System.Drawing.Color.White;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-
-            this.launchToolStripMenuItem,
-            this.windowSizeToolStripMenuItem,
-            this.allWindowsToolStripMenuItem,
-            this.cascadeToolStripMenuItem,
-            this.primaryMonitorToolStripMenuItem,
-            this.optionsToolStripMenuItem});
             this.launchBtn,
             this.sizeSelector,
             this.allWindows,
             this.cascade,
-            this.monitors});
+            this.monitors,
+            this.optionsToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -133,23 +127,30 @@
             // toggleHideToolStripMenuItem
             // 
             this.toggleHideToolStripMenuItem.Name = "toggleHideToolStripMenuItem";
-            this.toggleHideToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.toggleHideToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.toggleHideToolStripMenuItem.Text = "Toggle Hide";
             this.toggleHideToolStripMenuItem.Click += new System.EventHandler(this.toggleHideToolStripMenuItem_Click);
             // 
             // smallToolStripMenuItem
             // 
             this.smallToolStripMenuItem.Name = "smallToolStripMenuItem";
-            this.smallToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.smallToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.smallToolStripMenuItem.Text = "Small";
             this.smallToolStripMenuItem.Click += new System.EventHandler(this.smallToolStripMenuItem_Click);
             // 
             // largeToolStripMenuItem
             // 
             this.largeToolStripMenuItem.Name = "largeToolStripMenuItem";
-            this.largeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.largeToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.largeToolStripMenuItem.Text = "Large";
             this.largeToolStripMenuItem.Click += new System.EventHandler(this.largeToolStripMenuItem_Click);
+            // 
+            // large4k
+            // 
+            this.large4k.Name = "large4k";
+            this.large4k.Size = new System.Drawing.Size(138, 22);
+            this.large4k.Text = "Large(4k)";
+            this.large4k.Click += new System.EventHandler(this.large4k_Click);
             // 
             // cascade
             // 
@@ -189,6 +190,13 @@
             this.monitors.Size = new System.Drawing.Size(101, 19);
             this.monitors.Text = "Primary Display";
             // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 19);
+            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
+            // 
             // thumbTbl
             // 
             this.thumbTbl.AutoSize = true;
@@ -206,19 +214,6 @@
             this.thumbTbl.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.thumbTbl.Size = new System.Drawing.Size(599, 173);
             this.thumbTbl.TabIndex = 2;
-            // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 19);
-            this.optionsToolStripMenuItem.Text = "Options";
-            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
-            // large4k
-            // 
-            this.large4k.Name = "large4k";
-            this.large4k.Size = new System.Drawing.Size(180, 22);
-            this.large4k.Text = "Large(4k)";
-            this.large4k.Click += new System.EventHandler(this.large4k_Click);
             // 
             // MainForm
             // 
