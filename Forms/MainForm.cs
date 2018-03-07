@@ -415,10 +415,12 @@ namespace DAWindower
                 cli.Resize(1280, 960);
         }
 
+
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OptionsForm opt = new OptionsForm();
             opt.Show();
+        }
 
         private void large4k_Click(object sender, EventArgs e)
         {

@@ -54,6 +54,7 @@
             this.menuStrip1.AllowMerge = false;
             this.menuStrip1.BackColor = System.Drawing.Color.White;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+
             this.launchToolStripMenuItem,
             this.windowSizeToolStripMenuItem,
             this.allWindowsToolStripMenuItem,
