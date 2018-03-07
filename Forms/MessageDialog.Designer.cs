@@ -40,7 +40,7 @@
             this.messageLbl.Name = "messageLbl";
             this.messageLbl.Size = new System.Drawing.Size(291, 47);
             this.messageLbl.TabIndex = 10;
-            this.messageLbl.Text = "This is where you put text";
+            this.messageLbl.Text = "text goes here";
             this.messageLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cancelBtn

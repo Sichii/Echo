@@ -64,8 +64,7 @@ namespace DAWindower
 
     [Flags]
     internal enum WindowStyleFlags : uint
-    {   //  14CE
-        //0x14CF0000
+    {
         Border = 0x00800000,
         Caption = 0x00C00000,
         Child = 0x40000000,

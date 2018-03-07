@@ -9,12 +9,12 @@ using System.Linq;
 
 namespace DAWindower
 {
-    public partial class MainForm : Form
+    internal partial class MainForm : Form
     {
         private Thread ClientHandlerThread;
         private List<Client> Clients;
 
-        public MainForm()
+        internal MainForm()
         {
             Clients = new List<Client>();
             InitializeComponent();
@@ -67,11 +67,7 @@ namespace DAWindower
             User32.GetClientRect(p.MainWindowHandle, ref client.ClientRect);
             User32.GetWindowRect(p.MainWindowHandle, ref client.WindowRect);
 
-            bool smallOpt = small.Checked;
-            bool largeOpt = large.Checked;
-            bool fullOpt = fullscreen.Checked;
-
-            if (fullOpt)
+            if (fullscreen.Checked)
             {
                 client.State |= ClientState.Fullscreen;
                 //set window to simply visible : not title bar, resizing, border/frame, etc
@@ -79,7 +75,7 @@ namespace DAWindower
                 //maximize the window and activate it
                 User32.ShowWindowAsync(p.MainWindowHandle, ShowWindowFlags.ActiveMaximized);
             }
-            else if (largeOpt)
+            else if (large.Checked)
             {
                 client.State |= ClientState.Normal;
                 User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
@@ -87,8 +83,12 @@ namespace DAWindower
             else
                 client.State |= ClientState.Normal;
 
+            //add this control to the tablelayoutview with automatic placement
             thumbTbl.Controls.Add(client.Thumb, -1, -1);
+            //create the thumbnail using this control's position
             client.Thumb.CreateT();
+
+            //show this control
             client.Thumb.Visible = true;
             client.Thumb.Show();
         }
@@ -161,6 +161,7 @@ namespace DAWindower
             {
                 List<Client> currentClients = Clients.ToList();
                 List<int> notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
+
                 if (notRunning.Count > 0)
                 {
                     foreach (Client client in currentClients)

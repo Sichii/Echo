@@ -25,11 +25,9 @@ namespace DAWindower
 
         internal bool CreateT()
         {
-            IntPtr Handle = Client.MainHandle;
-
-            int x = Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Handle, out tHandle);
+            int x = Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle);
             //attempt to register this darkages process to a thumbnail, 0 for success
-            if (Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Handle, out tHandle) == 0)
+            if (Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle) == 0)
             {
                 //create a new thumbnail properties struct and set properties/location/size/etc
                 ThumbnailProperties tProperties = new ThumbnailProperties();
