@@ -6,6 +6,8 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Linq;
+using DAWindower.Forms;
+using System.Drawing;
 
 namespace DAWindower
 {
@@ -14,36 +16,84 @@ namespace DAWindower
         private Thread ClientHandlerThread;
         private List<Client> Clients;
 
+        internal int CurrentIndex
+        {
+            get
+            {
+                lock (Clients)
+                    return Clients.Count + 1;
+            }
+        }
+
         internal MainForm()
         {
             Clients = new List<Client>();
             InitializeComponent();
+            Settings.Default.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Default.DarkAgesPath);
             ClientHandlerThread = new Thread(new ThreadStart(HandleClients));
             ClientHandlerThread.Start();
+
+            //populate displays
+            while (monitors.DropDownItems.Count > 0)
+                monitors.DropDownItems[0].Dispose();
+
+            int count = 1;
+            foreach (Screen screen in Screen.AllScreens)
+            {
+                ToolStripMenuItem item = new ToolStripMenuItem($@"{screen.DeviceName}", null, ChangePrimaryMonitor, $@"Monitor {count}");
+
+                if (screen.Primary)
+                    item.Checked = true;
+
+                monitors.DropDownItems.Add(item);
+            }
+        }
+
+        internal void RefreshThumbnails()
+        {
+            if (InvokeRequired)
+                Invoke((Action)(() => RefreshThumbnails()));
+            else
+            {
+                lock (Clients)
+                {
+                    //update all thumbnail locations by unregistering, then recreating
+                    foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
+                        thumb.UpdateT();
+                }
+            }
+        }
+
+        internal void RemoveClient(Client client)
+        {
+            lock (Clients)
+            {
+                //safely remove a client from the list
+                Clients.Remove(client);
+            }
         }
 
         private void LaunchDA(object sender, EventArgs e)
         {
-            string dir = @"C:\Program Files (x86)\KRU\Dark Ages\";
+            var dir = Settings.Default.DarkAgesPath;
+            var dirDawn = Settings.Default.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
 
             //correct path if required
-            if (!File.Exists($@"{dir}Darkages.exe"))
+            if (!File.Exists(dir))
             {
-                dir = dir.Replace(" (x86)", "");
-                if (!File.Exists($@"{dir}Darkages.exe"))
-                    MessageDialog.Show(this, "Could not locate Darkages.exe");
+                MessageDialog.Show(this, "Could not locate Darkages.exe");
             }
 
             //check for dawnd, if it's not there then write it
-            if (!File.Exists($@"{dir}dawnd.dll"))
-                File.WriteAllBytes($@"{dir}dawnd.dll", Properties.Resources.dawnd);
+            if (!File.Exists(dirDawn))
+                File.WriteAllBytes(dirDawn, Properties.Resources.dawnd);
 
             //create a da process
             StartInfo startupInfo = new StartInfo();
             ProcInfo procInfo = new ProcInfo();
 
             startupInfo.Size = Marshal.SizeOf(startupInfo);
-            Kernel32.CreateProcess($@"{dir}Darkages.exe", null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
+            Kernel32.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
 
             //open an access handle to this process
             IntPtr hProcess = Kernel32.OpenProcess(ProcessAccessFlags.FullAccess, true, procInfo.ProcessId);
@@ -55,7 +105,9 @@ namespace DAWindower
 
             //create client from this process
             Client client = new Client(this, procInfo.ProcessId);
-            Clients.Add(client);
+
+            lock (Clients)
+                Clients.Add(client);
 
             //wait till window is shown
             Process p = Process.GetProcessById(procInfo.ProcessId);
@@ -93,7 +145,7 @@ namespace DAWindower
             client.Thumb.Show();
         }
 
-        internal bool InjectDLL(IntPtr accessHandle)
+        private bool InjectDLL(IntPtr accessHandle)
         {
             string dllName = "dawnd.dll";
             IntPtr bytesout;
@@ -152,15 +204,21 @@ namespace DAWindower
             return true;
         }
 
-        internal void HandleClients()
+        private void HandleClients()
         {
             while (!Visible)
                 Thread.Sleep(10);
 
             while (Visible)
             {
-                List<Client> currentClients = Clients.ToList();
-                List<int> notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
+                List<Client> currentClients;
+                List<int> notRunning;
+
+                lock (Clients)
+                {
+                    currentClients = Clients.ToList();
+                    notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
+                }
 
                 if (notRunning.Count > 0)
                 {
@@ -176,28 +234,6 @@ namespace DAWindower
             return;
         }
 
-        internal void RefreshThumbnails()
-        {
-            if (InvokeRequired)
-                Invoke((Action)(() => RefreshThumbnails()));
-            else
-            {
-                lock (Clients)
-                {
-                    foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
-                        thumb.UpdateT();
-                }
-            }
-        }
-
-        internal void RemoveClient(Client client)
-        {
-            lock (Clients)
-            {
-                Clients.Remove(client);
-            }
-        }
-
         private void DropDownCheck(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
@@ -207,6 +243,158 @@ namespace DAWindower
             fullscreen.Checked = false;
 
             item.Checked = true;
+        }
+
+        private void AllVisible(bool skipPrimary = false, List<Client> skipList = default(List<Client>))
+        {
+            //list of clients and their destination points
+            Dictionary<Client, Point> cascader = new Dictionary<Client, Point>();
+            //list of all displays
+            List<Screen> Screens = Screen.AllScreens.ToList();
+            //represents the index of the current display
+            int current = -1;
+
+            //sets the current display to their selected primary display
+            foreach (ToolStripMenuItem item in monitors.DropDownItems)
+                if (item.Checked)
+                {
+                    current = Screens.FindIndex(s => s.DeviceName == item.Text);
+                    break;
+                }
+
+            //if that failed, dont do anything
+            if (current == -1)
+                return;
+
+            if (skipPrimary)
+            {
+                current++;
+
+                if (current >= Screens.Count)
+                    current = 0;
+            }
+
+            if (skipList == null)
+                skipList = new List<Client>();
+
+            //represents the current and maximum bounds of the current display
+            int X = Screens[current].Bounds.Left - 10;
+            int Y = Screens[current].Bounds.Top + 10;
+            int xMax = Screens[current].Bounds.Right + 50;
+            int yMax = Screens[current].Bounds.Bottom + 50;
+
+            lock (Clients)
+            {
+                //for each client
+                foreach (Client client in Clients.Except(skipList))
+                {
+                    //resize it to small (or large if 4k)
+                    if (Screens[current].Bounds.Width > 3000)
+                        client.Resize(1280, 960);
+                    else
+                        client.Resize(640, 480);
+                    //add this client, point pair to the cascade dic
+                    cascader.Add(client, new Point(X, Y));
+
+                    //set co-ordinates for the next client
+                    //tiles horizontally, then vertically, then to next screen
+                    X += client.cWidth;
+
+                    if (X + client.cWidth > xMax)
+                    {
+                        X = Screens[current].Bounds.Left - 10;
+                        Y += client.wHeight;
+
+                        if (Y + client.wHeight > yMax)
+                        {
+                            current++;
+
+                            if (current >= Screens.Count)
+                                current = 0;
+
+                            //if we're going to a new screen, make sure to re-grab the bounds of the new screen
+                            X = Screens[current].Bounds.Left - 10;
+                            Y = Screens[current].Bounds.Top + 25;
+                            xMax = Screens[current].Bounds.Right + 50;
+                            yMax = Screens[current].Bounds.Bottom + 50;
+                        }
+                    }
+                }
+            }
+
+            foreach (var kvp in cascader)
+                User32.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.wWidth, kvp.Key.wHeight, true);
+        }
+
+        private void Commander(string name)
+        {
+            //list of clients and their destination points
+            Dictionary<Client, Point> cascader = new Dictionary<Client, Point>();
+            //list of all displays
+            List<Screen> Screens = Screen.AllScreens.ToList();
+            //the commander
+            Client commander;
+
+            //grab the commander as designated by the item that was clicked
+            lock (Clients)
+                commander = Clients.FirstOrDefault(c => c.Name == name);
+
+            //represents the index of the current display
+            int current = -1;
+
+            //sets the current display to their selected primary display
+            foreach (ToolStripMenuItem dropItem in monitors.DropDownItems)
+                if (dropItem.Checked)
+                {
+                    current = Screens.FindIndex(s => s.DeviceName.Equals(dropItem.Text));
+                    break;
+                }
+
+            //if that failed, dont do anything
+            if (current == -1 || commander == null)
+                return;
+
+            //represents the current and maximum bounds of the current display
+            int X = Screens[current].Bounds.Left - 10;
+            int Y = Screens[current].Bounds.Top + 30;
+
+            //resize commander to large (or large4k if 4k)
+            if (Screens[current].Bounds.Width > 3000)
+                commander.Resize(2560, 1920);
+            else
+                commander.Resize(1280, 960);
+
+            //add commander to be placed
+            cascader.Add(commander, new Point(X, Y));
+
+            //set next client to be to the right of the commander window
+            X = Screens[current].Bounds.Left + commander.cWidth;
+            Y = Screens[current].Bounds.Top + 10;
+
+            lock (Clients)
+            {
+                //for the first 2 clients that arent the commander
+                foreach (Client client in Clients.Where(c => c != commander).Take(2))
+                {
+                    //resize it to small (or large if 4k)
+                    if (Screens[current].Bounds.Width > 3000)
+                        client.Resize(1280, 960);
+                    else
+                        client.Resize(640, 480);
+
+                    //add the first one
+                    cascader.Add(client, new Point(X, Y));
+
+                    //set the y to be below the first one, for the position of the 2nd
+                    Y = Screens[current].Bounds.Top + client.wHeight + 10;
+                }
+
+                //for the rest of the clients, do all visible on the next monitor
+                AllVisible(true, cascader.Keys.ToList());
+            }
+
+            foreach (var kvp in cascader)
+                User32.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.wWidth, kvp.Key.wHeight, true);
         }
 
         private void toggleHideToolStripMenuItem_Click(object sender, EventArgs e)
@@ -225,6 +413,60 @@ namespace DAWindower
         {
             foreach (Client cli in Clients)
                 cli.Resize(1280, 960);
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OptionsForm opt = new OptionsForm();
+            opt.Show();
+
+        private void large4k_Click(object sender, EventArgs e)
+        {
+            foreach (Client cli in Clients)
+                cli.Resize(2560, 1920);
+        }
+
+        private void commander_MouseEnter(object sender, EventArgs e)
+        {
+            while (commander.DropDownItems.Count > 0)
+                commander.DropDownItems[0].Dispose();
+
+            lock (Clients)
+            {
+                foreach (Client c in Clients)
+                {
+                    ToolStripMenuItem item = new ToolStripMenuItem(c.Name, null, commander_Click, c.Name);
+                    commander.DropDownItems.Add(item);
+                }
+            }
+        }
+
+        private void ChangePrimaryMonitor(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            foreach (ToolStripMenuItem dropItem in monitors.DropDownItems)
+                dropItem.Checked = false;
+
+            item.Checked = true;
+        }
+
+        private void allVisible_Click(object sender, EventArgs e)
+        {
+            AllVisible();
+        }
+
+        private void commander_Click(object sender, EventArgs e)
+        {
+            //item that was clicked
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            Commander(item.Name);
+        }
+
+        private void dropClosed(object sender, EventArgs e)
+        {
+            (sender as ToolStripDropDownItem).DropDown.Close();
         }
     }
 }

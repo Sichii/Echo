@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace DAWindower
 {
@@ -88,6 +89,11 @@ namespace DAWindower
             Client.Resize(1280, 960);
         }
 
+        private void large4k_Click(object sender, EventArgs e)
+        {
+            Client.Resize(2560, 1920);
+        }
+
         private void fullscreen_Click(object sender, EventArgs e)
         {
             Client.Resize(0, 0, false, true);
@@ -95,18 +101,21 @@ namespace DAWindower
 
         private void Thumbnail_Click(object sender, EventArgs e)
         {
+            //if it's hidden, unhide it
             if (!User32.IsWindowVisible(Client.MainHandle))
-            {
-                Client.State &= ~ClientState.Hidden;
-                User32.ShowWindow(Client.HiddenHandle, ShowWindowFlags.ActiveShow);
-                UpdateT();
-                hiddenFsLbl.Visible = false;
-            }
+                Client.Resize(0, 0, true);
+            //if it's fullscreen, restore it to it's current position and size
             else if (Client.State.HasFlag(ClientState.Fullscreen))
                 User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
+            //otherwise, restore it to it's last known position and size
             else
                 User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
 
+            //wait for window to appear
+            while (Client.MainHandle == IntPtr.Zero)
+                Thread.Sleep(10);
+
+            //set the window as the foreground window
             User32.SetForegroundWindow((int)Client.MainHandle);
         }
 

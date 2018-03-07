@@ -38,31 +38,37 @@
             this.messageLbl.Dock = System.Windows.Forms.DockStyle.Top;
             this.messageLbl.Location = new System.Drawing.Point(0, 0);
             this.messageLbl.Name = "messageLbl";
-            this.messageLbl.Size = new System.Drawing.Size(291, 47);
+            this.messageLbl.Size = new System.Drawing.Size(291, 46);
             this.messageLbl.TabIndex = 10;
             this.messageLbl.Text = "text goes here";
             this.messageLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cancelBtn
             // 
-            this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cancelBtn.AutoSize = true;
             this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cancelBtn.Location = new System.Drawing.Point(204, 51);
+            this.cancelBtn.Location = new System.Drawing.Point(204, 49);
             this.cancelBtn.Name = "cancelBtn";
-            this.cancelBtn.Size = new System.Drawing.Size(75, 23);
+            this.cancelBtn.Size = new System.Drawing.Size(75, 25);
             this.cancelBtn.TabIndex = 9;
             this.cancelBtn.Text = "Cancel";
             this.cancelBtn.UseVisualStyleBackColor = true;
             // 
             // okBtn
             // 
-            this.okBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.okBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.okBtn.AutoSize = true;
             this.okBtn.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.okBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.okBtn.Location = new System.Drawing.Point(12, 51);
+            this.okBtn.Location = new System.Drawing.Point(12, 49);
             this.okBtn.Name = "okBtn";
-            this.okBtn.Size = new System.Drawing.Size(75, 23);
+            this.okBtn.Size = new System.Drawing.Size(75, 25);
             this.okBtn.TabIndex = 8;
             this.okBtn.Text = "Ok";
             this.okBtn.UseVisualStyleBackColor = true;
@@ -70,9 +76,10 @@
             // MessageDialog
             // 
             this.AcceptButton = this.okBtn;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(291, 86);
             this.Controls.Add(this.messageLbl);
@@ -90,6 +97,7 @@
             this.Text = "MessageDialog";
             this.TopMost = true;
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
