@@ -318,3 +318,9 @@ ASALocalRun/
 
 # MSBuild Binary and Structured Log
 *.binlog
+
+# sqlite3
+*.ide
+*.ide-wal
+*.ide-shm
+
