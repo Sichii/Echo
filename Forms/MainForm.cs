@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Linq;
+using DAWindower.Forms;
 using System.Drawing;
 
 namespace DAWindower
@@ -28,6 +29,7 @@ namespace DAWindower
         {
             Clients = new List<Client>();
             InitializeComponent();
+            Settings.Default.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Default.DarkAgesPath);
             ClientHandlerThread = new Thread(new ThreadStart(HandleClients));
             ClientHandlerThread.Start();
 
@@ -73,26 +75,25 @@ namespace DAWindower
 
         private void LaunchDA(object sender, EventArgs e)
         {
-            string dir = @"C:\Program Files (x86)\KRU\Dark Ages\";
+            var dir = Settings.Default.DarkAgesPath;
+            var dirDawn = Settings.Default.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
 
             //correct path if required
-            if (!File.Exists($@"{dir}Darkages.exe"))
+            if (!File.Exists(dir))
             {
-                dir = dir.Replace(" (x86)", "");
-                if (!File.Exists($@"{dir}Darkages.exe"))
-                    MessageDialog.Show(this, "Could not locate Darkages.exe");
+                MessageDialog.Show(this, "Could not locate Darkages.exe");
             }
 
             //check for dawnd, if it's not there then write it
-            if (!File.Exists($@"{dir}dawnd.dll"))
-                File.WriteAllBytes($@"{dir}dawnd.dll", Properties.Resources.dawnd);
+            if (!File.Exists(dirDawn))
+                File.WriteAllBytes(dirDawn, Properties.Resources.dawnd);
 
             //create a da process
             StartInfo startupInfo = new StartInfo();
             ProcInfo procInfo = new ProcInfo();
 
             startupInfo.Size = Marshal.SizeOf(startupInfo);
-            Kernel32.CreateProcess($@"{dir}Darkages.exe", null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
+            Kernel32.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
 
             //open an access handle to this process
             IntPtr hProcess = Kernel32.OpenProcess(ProcessAccessFlags.FullAccess, true, procInfo.ProcessId);
@@ -412,6 +413,13 @@ namespace DAWindower
         {
             foreach (Client cli in Clients)
                 cli.Resize(1280, 960);
+        }
+
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OptionsForm opt = new OptionsForm();
+            opt.Show();
         }
 
         private void large4k_Click(object sender, EventArgs e)

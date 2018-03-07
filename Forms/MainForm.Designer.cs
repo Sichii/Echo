@@ -44,6 +44,7 @@
             this.placeholderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.monitors = new System.Windows.Forms.ToolStripMenuItem();
             this.thumbTbl = new System.Windows.Forms.TableLayoutPanel();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.large4k = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -53,6 +54,13 @@
             this.menuStrip1.AllowMerge = false;
             this.menuStrip1.BackColor = System.Drawing.Color.White;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+
+            this.launchToolStripMenuItem,
+            this.windowSizeToolStripMenuItem,
+            this.allWindowsToolStripMenuItem,
+            this.cascadeToolStripMenuItem,
+            this.primaryMonitorToolStripMenuItem,
+            this.optionsToolStripMenuItem});
             this.launchBtn,
             this.sizeSelector,
             this.allWindows,
@@ -199,6 +207,12 @@
             this.thumbTbl.Size = new System.Drawing.Size(599, 173);
             this.thumbTbl.TabIndex = 2;
             // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 19);
+            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // large4k
             // 
             this.large4k.Name = "large4k";
@@ -243,6 +257,7 @@
         private System.Windows.Forms.ToolStripMenuItem smallToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem largeToolStripMenuItem;
         private System.Windows.Forms.TableLayoutPanel thumbTbl;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem allVisible;
         private System.Windows.Forms.ToolStripMenuItem commander;
         private System.Windows.Forms.ToolStripMenuItem placeholderToolStripMenuItem;
