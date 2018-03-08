@@ -34,6 +34,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -132,6 +135,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\dawnd.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="dawindower.ico" />
+    <Content Include="Resources\dawindower.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
