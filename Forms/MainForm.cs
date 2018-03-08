@@ -6,7 +6,6 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Linq;
-using DAWindower.Forms;
 using System.Drawing;
 using System.Text;
 
@@ -50,30 +49,7 @@ namespace DAWindower
             }
         }
 
-        internal void RefreshThumbnails()
-        {
-            if (InvokeRequired)
-                Invoke((Action)(() => RefreshThumbnails()));
-            else
-            {
-                lock (Clients)
-                {
-                    //update all thumbnail locations by unregistering, then recreating
-                    foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
-                        thumb.UpdateT();
-                }
-            }
-        }
-
-        internal void RemoveClient(Client client)
-        {
-            lock (Clients)
-            {
-                //safely remove a client from the list
-                Clients.Remove(client);
-            }
-        }
-
+        #region Lauunch DA
         private void LaunchDA(object sender, EventArgs e)
         {
             var dir = Settings.Default.DarkAgesPath;
@@ -217,94 +193,9 @@ namespace DAWindower
             //return succeeded
             return true;
         }
+        #endregion
 
-        private void HandleClients()
-        {
-            DateTime lastNameCheck = DateTime.UtcNow;
-            while (!Visible)
-                Thread.Sleep(10);
-
-            while (Visible)
-            {
-                List<Client> currentClients;
-                List<int> notRunning;
-
-                lock (Clients)
-                {
-                    //get current clients (that we see)
-                    currentClients = Clients.ToList();
-
-                    if (currentClients.Count == 0)
-                    {
-                        Thread.Sleep(1000);
-                        continue;
-                    }
-
-                    //any client we have but the system doesnt, was closed
-                    notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
-                }
-
-                //if we have any clients that the system doesnt
-                if (notRunning.Count > 0)
-                {
-                    //remove their thumbnail
-                    foreach (Client client in currentClients)
-                        if (notRunning.Contains(client.ProcId))
-                            client.Thumb.DestroyThumbnail(false, false);
-
-                    //refresh other thumbnails
-                    RefreshThumbnails();
-                }
-
-                //only check names every 5 seconds
-                if (DateTime.UtcNow.Subtract(lastNameCheck).TotalSeconds > 5)
-                {
-                    //refresh client list
-                    lock (Clients)
-                        currentClients = Clients.ToList();
-
-                    //for each client over 5 seconds old, and rendered
-                    foreach (Client client in currentClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5 && c.MainHandle != IntPtr.Zero))
-                    {
-                        //name max length is 13 characters
-                        byte[] buffer = new byte[13];
-                        //seek to the memory position of the name
-                        client.pms.Position = 0x73D910;
-                        //read it (marshal.copy into buffer)
-                        client.pms.Read(buffer, 0, 13);
-
-                        //get the name, remove trailing null characters
-                        //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
-                        string name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
-                        //set window, thumb, and name if it's valid
-                        if (!string.IsNullOrWhiteSpace(name))
-                        {
-                            Invoke((Action)(() => client.Thumb.windowTitleLbl.Text = name));
-                            client.Name = name;
-                            User32.SetWindowText(client.Proc.MainWindowHandle, name);
-                        }
-                    }
-
-                    //only check every 5seconds
-                    lastNameCheck = DateTime.UtcNow;
-                }
-                Thread.Sleep(500);
-            }
-
-            return;
-        }
-
-        private void DropDownCheck(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-
-            small.Checked = false;
-            large.Checked = false;
-            fullscreen.Checked = false;
-
-            item.Checked = true;
-        }
-
+        #region Cascade
         private void AllVisible(bool skipPrimary = false, List<Client> skipList = default(List<Client>))
         {
             //list of clients and their destination points
@@ -385,7 +276,6 @@ namespace DAWindower
             foreach (var kvp in cascader)
                 User32.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.wWidth, kvp.Key.wHeight, true);
         }
-
         private void Commander(string name)
         {
             //list of clients and their destination points
@@ -455,6 +345,124 @@ namespace DAWindower
 
             foreach (var kvp in cascader)
                 User32.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.wWidth, kvp.Key.wHeight, true);
+        }
+        #endregion
+
+        #region Thumbnail Actions
+        internal void RefreshThumbnails()
+        {
+            if (InvokeRequired)
+                Invoke((Action)(() => RefreshThumbnails()));
+            else
+            {
+                lock (Clients)
+                {
+                    //update all thumbnail locations by unregistering, then recreating
+                    foreach (Thumbnail thumb in Clients.Where(c => c.IsRunning).Select(c => c.Thumb))
+                        thumb.UpdateT();
+                }
+            }
+        }
+        #endregion
+
+        #region Client Actions
+        internal void RemoveClient(Client client)
+        {
+            lock (Clients)
+            {
+                //safely remove a client from the list
+                client.pms.Dispose();
+                Clients.Remove(client);
+            }
+        }
+        private void HandleClients()
+        {
+            DateTime lastNameCheck = DateTime.UtcNow;
+
+            while (!Visible)
+                Thread.Sleep(10);
+
+            while (Visible)
+            {
+                List<Client> currentClients;
+                List<int> notRunning;
+
+                lock (Clients)
+                {
+                    //get current clients (that we see)
+                    currentClients = Clients.ToList();
+
+                    if (currentClients.Count == 0)
+                    {
+                        Thread.Sleep(1000);
+                        continue;
+                    }
+
+                    //any client we have but the system doesnt, was closed
+                    notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
+                }
+
+                //if we have any clients that the system doesnt
+                if (notRunning.Count > 0)
+                {
+                    //remove their thumbnail
+                    foreach (Client client in currentClients)
+                        if (notRunning.Contains(client.ProcId))
+                            client.Thumb.DestroyT(false, false);
+
+                    //refresh other thumbnails
+                    RefreshThumbnails();
+                }
+
+                //only check names every 5 seconds
+                if (DateTime.UtcNow.Subtract(lastNameCheck).TotalSeconds > 5)
+                {
+                    //refresh client list
+                    lock (Clients)
+                        currentClients = Clients.ToList();
+
+                    //for each client over 5 seconds old, and rendered
+                    foreach (Client client in currentClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5 && c.MainHandle != IntPtr.Zero))
+                    {
+                        //name max length is 13 characters
+                        byte[] buffer = new byte[13];
+                        //seek to the memory position of the name
+                        client.pms.Position = 0x73D910;
+                        //read it (marshal.copy into buffer)
+                        client.pms.Read(buffer, 0, 13);
+
+                        //get the name, remove trailing null characters
+                        //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
+                        string name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
+                        //set window, thumb, and name if it's valid
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            Invoke((Action)(() => client.Thumb.windowTitleLbl.Text = name));
+                            client.Name = name;
+                            User32.SetWindowText(client.Proc.MainWindowHandle, name);
+                        }
+                    }
+
+                    //only check every 5seconds
+                    lastNameCheck = DateTime.UtcNow;
+                }
+                Thread.Sleep(500);
+            }
+
+            return;
+        }
+        #endregion
+
+        #region Handlers
+        private void DropDownCheck(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            small.Checked = false;
+            large.Checked = false;
+            fullscreen.Checked = false;
+
+            item.Checked = true;
         }
 
         private void toggleHideToolStripMenuItem_Click(object sender, EventArgs e)
@@ -530,5 +538,6 @@ namespace DAWindower
         {
             (sender as ToolStripDropDownItem).DropDown.Close();
         }
+        #endregion
     }
 }

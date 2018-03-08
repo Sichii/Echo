@@ -2,10 +2,9 @@
 using System.Windows.Forms;
 using System.IO;
 
-
-namespace DAWindower.Forms
+namespace DAWindower
 {
-    public partial class OptionsForm : Form
+    internal partial class OptionsForm : Form
     {
         public OptionsForm()
         {

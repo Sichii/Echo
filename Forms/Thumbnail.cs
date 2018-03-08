@@ -59,60 +59,10 @@ namespace DAWindower
             CreateT();
         }
 
-        private void toggleHide_Click(object sender, EventArgs e)
-        {
-            Client.Resize(0, 0, true);
-        }
-
-        private void small_Click(object sender, EventArgs e)
-        {
-            Client.Resize(640, 480);
-        }
-
-        private void large_Click(object sender, EventArgs e)
-        {
-            Client.Resize(1280, 960);
-        }
-
-        private void large4k_Click(object sender, EventArgs e)
-        {
-            Client.Resize(2560, 1920);
-        }
-
-        private void fullscreen_Click(object sender, EventArgs e)
-        {
-            Client.Resize(0, 0, false, true);
-        }
-
-        private void Thumbnail_Click(object sender, EventArgs e)
-        {
-            //if it's hidden, unhide it
-            if (!User32.IsWindowVisible(Client.MainHandle))
-                Client.Resize(0, 0, true);
-            //if it's fullscreen, restore it to it's current position and size
-            else if (Client.State.HasFlag(ClientState.Fullscreen))
-                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
-            //otherwise, restore it to it's last known position and size
-            else
-                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
-
-            //wait for window to appear
-            while (Client.MainHandle == IntPtr.Zero)
-                Thread.Sleep(10);
-
-            //set the window as the foreground window
-            User32.SetForegroundWindow((int)Client.MainHandle);
-        }
-
-        private void exitBtn_Click(object sender, EventArgs e)
-        {
-            DestroyThumbnail();
-        }
-
-        internal void DestroyThumbnail(bool kill = true, bool refresh = true)
+        internal void DestroyT(bool kill = true, bool refresh = true)
         {
             if (InvokeRequired)
-                Invoke((Action)(() => DestroyThumbnail(kill, refresh)));
+                Invoke((Action)(() => DestroyT(kill, refresh)));
             else
             {
                 Client.IsRunning = false;
@@ -138,5 +88,57 @@ namespace DAWindower
                     MainForm.RefreshThumbnails();
             }
         }
+
+        #region Handlers
+        private void toggleHide_Click(object sender, EventArgs e)
+        {
+            Client.Resize(0, 0, true);
+        }
+
+        private void small_Click(object sender, EventArgs e)
+        {
+            Client.Resize(640, 480);
+        }
+
+        private void large_Click(object sender, EventArgs e)
+        {
+            Client.Resize(1280, 960);
+        }
+
+        private void large4k_Click(object sender, EventArgs e)
+        {
+            Client.Resize(2560, 1920);
+        }
+
+        private void fullscreen_Click(object sender, EventArgs e)
+        {
+            Client.Resize(0, 0, false, true);
+        }
+
+        private void exitBtn_Click(object sender, EventArgs e)
+        {
+            DestroyT();
+        }
+
+        private void Thumbnail_Click(object sender, EventArgs e)
+        {
+            //if it's hidden, unhide it
+            if (!User32.IsWindowVisible(Client.MainHandle))
+                Client.Resize(0, 0, true);
+            //if it's fullscreen, restore it to it's current position and size
+            else if (Client.State.HasFlag(ClientState.Fullscreen))
+                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
+            //otherwise, restore it to it's last known position and size
+            else
+                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
+
+            //wait for window to appear
+            while (Client.MainHandle == IntPtr.Zero)
+                Thread.Sleep(10);
+
+            //set the window as the foreground window
+            User32.SetForegroundWindow((int)Client.MainHandle);
+        }
+        #endregion
     }
 }

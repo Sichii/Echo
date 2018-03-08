@@ -1,4 +1,4 @@
-﻿namespace DAWindower.Forms
+﻿namespace DAWindower
 {
     partial class OptionsForm
     {
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             this.darkAgesPath = new System.Windows.Forms.TextBox();
             this.SaveSettingsButton = new System.Windows.Forms.Button();
             this.BrowseDADirectoryButton = new System.Windows.Forms.Button();
@@ -86,6 +87,7 @@
             this.Controls.Add(this.BrowseDADirectoryButton);
             this.Controls.Add(this.darkAgesPath);
             this.ForeColor = System.Drawing.Color.Black;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "OptionsForm";
             this.Text = "OptionsForm";
             this.ResumeLayout(false);

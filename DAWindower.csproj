@@ -51,7 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Flags.cs" />
+    <Compile Include="Client\Flags.cs" />
     <Compile Include="Forms\InputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,7 +89,7 @@
     <Compile Include="Client\ProcessMemoryStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings.cs" />
+    <Compile Include="Client\Settings.cs" />
     <Compile Include="Structs\ProcInfo.cs" />
     <Compile Include="Structs\Rect.cs" />
     <Compile Include="Structs\StartInfo.cs" />
@@ -137,7 +137,6 @@
     <None Include="Resources\dawnd.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dawindower.ico" />
     <Content Include="Resources\dawindower.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

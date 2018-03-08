@@ -18,17 +18,21 @@ namespace DAWindower
         internal bool IsRunning = true;
         internal IntPtr HiddenHandle;
 
+        #region Client/Window Rect
         internal Point Point => WindowRect.Location;
         internal int wWidth => WindowRect.Width;
         internal int wHeight => WindowRect.Height;
         internal int cWidth => ClientRect.Width;
         internal int cHeight => ClientRect.Height;
-
         internal int BorderWidth => WindowRect.Width - ClientRect.Width;
         internal int TitleHeight => WindowRect.Height - ClientRect.Height;
+        #endregion
+
+        #region Process / Handle
         internal IntPtr MainHandle => Proc.MainWindowHandle;
         internal IntPtr Handle => Proc.Handle;
         internal Process Proc => Process.GetProcessById(ProcId);
+        #endregion
 
         internal Client(MainForm mainForm, int processId)
         {
@@ -40,12 +44,6 @@ namespace DAWindower
 
             pms = new ProcessMemoryStream(ProcId, ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmRead | ProcessAccessFlags.VmWrite);
         }
-
-        ~Client()
-        {
-            pms.Dispose();
-        }
-
         internal void Resize(int width, int height, bool hide = false, bool fullScreen = false)
         {
             //if toggling hide
