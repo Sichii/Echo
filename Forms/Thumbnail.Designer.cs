@@ -34,10 +34,10 @@
             this.toggleHide = new System.Windows.Forms.ToolStripMenuItem();
             this.small = new System.Windows.Forms.ToolStripMenuItem();
             this.large = new System.Windows.Forms.ToolStripMenuItem();
+            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
             this.fullscreen = new System.Windows.Forms.ToolStripMenuItem();
             this.windowTitleLbl = new System.Windows.Forms.ToolStripMenuItem();
             this.hiddenFsLbl = new System.Windows.Forms.Label();
-            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -87,7 +87,7 @@
             this.toggleHide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.toggleHide.ForeColor = System.Drawing.Color.White;
             this.toggleHide.Name = "toggleHide";
-            this.toggleHide.Size = new System.Drawing.Size(180, 22);
+            this.toggleHide.Size = new System.Drawing.Size(149, 22);
             this.toggleHide.Text = "Toggle Hide";
             this.toggleHide.Click += new System.EventHandler(this.toggleHide_Click);
             // 
@@ -96,7 +96,7 @@
             this.small.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.small.ForeColor = System.Drawing.Color.White;
             this.small.Name = "small";
-            this.small.Size = new System.Drawing.Size(180, 22);
+            this.small.Size = new System.Drawing.Size(149, 22);
             this.small.Text = "Small";
             this.small.Click += new System.EventHandler(this.small_Click);
             // 
@@ -105,16 +105,25 @@
             this.large.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.large.ForeColor = System.Drawing.Color.White;
             this.large.Name = "large";
-            this.large.Size = new System.Drawing.Size(180, 22);
+            this.large.Size = new System.Drawing.Size(149, 22);
             this.large.Text = "Large";
             this.large.Click += new System.EventHandler(this.large_Click);
+            // 
+            // large4k
+            // 
+            this.large4k.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.large4k.ForeColor = System.Drawing.Color.White;
+            this.large4k.Name = "large4k";
+            this.large4k.Size = new System.Drawing.Size(149, 22);
+            this.large4k.Text = "Large(4k)";
+            this.large4k.Click += new System.EventHandler(this.large4k_Click);
             // 
             // fullscreen
             // 
             this.fullscreen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.fullscreen.ForeColor = System.Drawing.Color.White;
             this.fullscreen.Name = "fullscreen";
-            this.fullscreen.Size = new System.Drawing.Size(180, 22);
+            this.fullscreen.Size = new System.Drawing.Size(149, 22);
             this.fullscreen.Text = "Full Screen";
             this.fullscreen.Click += new System.EventHandler(this.fullscreen_Click);
             // 
@@ -124,9 +133,8 @@
             this.windowTitleLbl.ForeColor = System.Drawing.Color.White;
             this.windowTitleLbl.Name = "windowTitleLbl";
             this.windowTitleLbl.Padding = new System.Windows.Forms.Padding(0);
-            this.windowTitleLbl.Size = new System.Drawing.Size(133, 24);
-            this.windowTitleLbl.Text = "CLICK ME TO RENAME";
-            this.windowTitleLbl.Click += new System.EventHandler(this.windowTitle_Click);
+            this.windowTitleLbl.Size = new System.Drawing.Size(65, 24);
+            this.windowTitleLbl.Text = "Unknown";
             // 
             // hiddenFsLbl
             // 
@@ -144,15 +152,6 @@
             this.hiddenFsLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.hiddenFsLbl.Visible = false;
             this.hiddenFsLbl.Click += new System.EventHandler(this.Thumbnail_Click);
-            // 
-            // large4k
-            // 
-            this.large4k.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.large4k.ForeColor = System.Drawing.Color.White;
-            this.large4k.Name = "large4k";
-            this.large4k.Size = new System.Drawing.Size(180, 22);
-            this.large4k.Text = "Large(4k)";
-            this.large4k.Click += new System.EventHandler(this.large4k_Click);
             // 
             // Thumbnail
             // 
@@ -183,7 +182,7 @@
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem exitBtn;
         private System.Windows.Forms.ToolStripMenuItem resizeBtn;
-        private System.Windows.Forms.ToolStripMenuItem windowTitleLbl;
+        internal System.Windows.Forms.ToolStripMenuItem windowTitleLbl;
         private System.Windows.Forms.ToolStripMenuItem toggleHide;
         private System.Windows.Forms.ToolStripMenuItem small;
         private System.Windows.Forms.ToolStripMenuItem large;

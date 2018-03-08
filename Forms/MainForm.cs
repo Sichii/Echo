@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using DAWindower.Forms;
 using System.Drawing;
+using System.Text;
 
 namespace DAWindower
 {
@@ -80,9 +81,7 @@ namespace DAWindower
 
             //correct path if required
             if (!File.Exists(dir))
-            {
                 MessageDialog.Show(this, "Could not locate Darkages.exe");
-            }
 
             //check for dawnd, if it's not there then write it
             if (!File.Exists(dirDawn))
@@ -95,16 +94,27 @@ namespace DAWindower
             startupInfo.Size = Marshal.SizeOf(startupInfo);
             Kernel32.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
 
+            //create client from this process
+            Client client = new Client(this, procInfo.ProcessId);
+
             //open an access handle to this process
             IntPtr hProcess = Kernel32.OpenProcess(ProcessAccessFlags.FullAccess, true, procInfo.ProcessId);
             //inject dawnd
-            InjectDLL(hProcess);
+            if (!InjectDLL(hProcess))
+                return;
+
+            //skip intro 0x0042E625
+            client.pms.Position = 0x0042E61F;
+            client.pms.WriteByte(0x90);
+            client.pms.WriteByte(0x90);
+            client.pms.WriteByte(0x90);
+            client.pms.WriteByte(0x90);
+            client.pms.WriteByte(0x90);
+            client.pms.WriteByte(0x90);
 
             //resume process thread
             Kernel32.ResumeThread(procInfo.ThreadHandle);
 
-            //create client from this process
-            Client client = new Client(this, procInfo.ProcessId);
 
             lock (Clients)
                 Clients.Add(client);
@@ -135,6 +145,10 @@ namespace DAWindower
             else
                 client.State |= ClientState.Normal;
 
+            //update the stored rects to reflect their size selection
+            User32.GetClientRect(client.MainHandle, ref client.ClientRect);
+            User32.GetWindowRect(client.MainHandle, ref client.WindowRect);
+
             //add this control to the tablelayoutview with automatic placement
             thumbTbl.Controls.Add(client.Thumb, -1, -1);
             //create the thumbnail using this control's position
@@ -163,7 +177,7 @@ namespace DAWindower
             //if failed to retreive function pointer
             if (injectionPtr == null)
             {
-                MessageDialog.Show(this, "Error 1\n");
+                MessageDialog.Show(this, "Error 1");
                 //return failed
                 return false;
             }
@@ -206,6 +220,7 @@ namespace DAWindower
 
         private void HandleClients()
         {
+            DateTime lastNameCheck = DateTime.UtcNow;
             while (!Visible)
                 Thread.Sleep(10);
 
@@ -216,19 +231,64 @@ namespace DAWindower
 
                 lock (Clients)
                 {
+                    //get current clients (that we see)
                     currentClients = Clients.ToList();
+
+                    if (currentClients.Count == 0)
+                    {
+                        Thread.Sleep(1000);
+                        continue;
+                    }
+
+                    //any client we have but the system doesnt, was closed
                     notRunning = Clients.Select(c => c.ProcId).Except(Process.GetProcessesByName("Darkages").Select(p => p.Id)).ToList();
                 }
 
+                //if we have any clients that the system doesnt
                 if (notRunning.Count > 0)
                 {
+                    //remove their thumbnail
                     foreach (Client client in currentClients)
                         if (notRunning.Contains(client.ProcId))
                             client.Thumb.DestroyThumbnail(false, false);
 
+                    //refresh other thumbnails
                     RefreshThumbnails();
                 }
-                Thread.Sleep(250);
+
+                //only check names every 5 seconds
+                if (DateTime.UtcNow.Subtract(lastNameCheck).TotalSeconds > 5)
+                {
+                    //refresh client list
+                    lock (Clients)
+                        currentClients = Clients.ToList();
+
+                    //for each client over 5 seconds old, and rendered
+                    foreach (Client client in currentClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5 && c.MainHandle != IntPtr.Zero))
+                    {
+                        //name max length is 13 characters
+                        byte[] buffer = new byte[13];
+                        //seek to the memory position of the name
+                        client.pms.Position = 0x73D910;
+                        //read it (marshal.copy into buffer)
+                        client.pms.Read(buffer, 0, 13);
+
+                        //get the name, remove trailing null characters
+                        //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
+                        string name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
+                        //set window, thumb, and name if it's valid
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            Invoke((Action)(() => client.Thumb.windowTitleLbl.Text = name));
+                            client.Name = name;
+                            User32.SetWindowText(client.Proc.MainWindowHandle, name);
+                        }
+                    }
+
+                    //only check every 5seconds
+                    lastNameCheck = DateTime.UtcNow;
+                }
+                Thread.Sleep(500);
             }
 
             return;
@@ -368,8 +428,8 @@ namespace DAWindower
             cascader.Add(commander, new Point(X, Y));
 
             //set next client to be to the right of the commander window
-            X = Screens[current].Bounds.Left + commander.cWidth;
-            Y = Screens[current].Bounds.Top + 10;
+            X = Screens[current].Bounds.Left + commander.cWidth - 10;
+            Y = Screens[current].Bounds.Top + 15;
 
             lock (Clients)
             {
@@ -386,7 +446,7 @@ namespace DAWindower
                     cascader.Add(client, new Point(X, Y));
 
                     //set the y to be below the first one, for the position of the 2nd
-                    Y = Screens[current].Bounds.Top + client.wHeight + 10;
+                    Y = Screens[current].Bounds.Top + client.wHeight;
                 }
 
                 //for the rest of the clients, do all visible on the next monitor

@@ -6,6 +6,8 @@ namespace DAWindower
 {
     internal class Client
     {
+        internal ProcessMemoryStream pms;
+        internal DateTime Creation;
         internal MainForm MainForm;
         internal string Name;
         internal int ProcId;
@@ -30,10 +32,18 @@ namespace DAWindower
 
         internal Client(MainForm mainForm, int processId)
         {
+            Creation = DateTime.UtcNow;
             Name = $@"Unknown {mainForm.CurrentIndex}";
             MainForm = mainForm;
             ProcId = processId;
             Thumb = new Thumbnail(mainForm, this);
+
+            pms = new ProcessMemoryStream(ProcId, ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmRead | ProcessAccessFlags.VmWrite);
+        }
+
+        ~Client()
+        {
+            pms.Dispose();
         }
 
         internal void Resize(int width, int height, bool hide = false, bool fullScreen = false)

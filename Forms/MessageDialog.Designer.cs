@@ -53,7 +53,7 @@
             this.cancelBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cancelBtn.Location = new System.Drawing.Point(204, 49);
             this.cancelBtn.Name = "cancelBtn";
-            this.cancelBtn.Size = new System.Drawing.Size(75, 25);
+            this.cancelBtn.Size = new System.Drawing.Size(79, 29);
             this.cancelBtn.TabIndex = 9;
             this.cancelBtn.Text = "Cancel";
             this.cancelBtn.UseVisualStyleBackColor = true;
@@ -68,7 +68,7 @@
             this.okBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.okBtn.Location = new System.Drawing.Point(12, 49);
             this.okBtn.Name = "okBtn";
-            this.okBtn.Size = new System.Drawing.Size(75, 25);
+            this.okBtn.Size = new System.Drawing.Size(79, 29);
             this.okBtn.TabIndex = 8;
             this.okBtn.Text = "Ok";
             this.okBtn.UseVisualStyleBackColor = true;
@@ -87,7 +87,7 @@
             this.Controls.Add(this.okBtn);
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.Black;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MessageDialog";

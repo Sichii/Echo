@@ -59,21 +59,6 @@ namespace DAWindower
             CreateT();
         }
 
-        private void windowTitle_Click(object sender, EventArgs e)
-        {
-            string input;
-
-            if (InputDialog.Show(MainForm, "Please enter a name for this window.", out input) == DialogResult.OK)
-            {
-                if (string.IsNullOrWhiteSpace(input))
-                    return;
-
-                windowTitleLbl.Text = input;
-                Client.Name = input;
-                User32.SetWindowText(Client.Proc.MainWindowHandle, input);
-            }
-        }
-
         private void toggleHide_Click(object sender, EventArgs e)
         {
             Client.Resize(0, 0, true);
