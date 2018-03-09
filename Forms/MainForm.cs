@@ -15,6 +15,7 @@ namespace DAWindower
     {
         private Thread ClientHandlerThread;
         private List<Client> Clients;
+        private OptionsForm Options;
 
         internal int CurrentIndex
         {
@@ -32,6 +33,8 @@ namespace DAWindower
             Settings.Default.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Default.DarkAgesPath);
             ClientHandlerThread = new Thread(new ThreadStart(HandleClients));
             ClientHandlerThread.Start();
+
+            Options = new OptionsForm();
 
             //populate displays
             while (monitors.DropDownItems.Count > 0)
@@ -113,13 +116,15 @@ namespace DAWindower
                 //maximize the window and activate it
                 User32.ShowWindowAsync(p.MainWindowHandle, ShowWindowFlags.ActiveMaximized);
             }
-            else if (large.Checked)
+            else
             {
                 client.State |= ClientState.Normal;
-                User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
+
+                if(large4k.Checked)
+                    User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 2560 + client.BorderWidth, 1920 + client.TitleHeight, true);
+                else if(large.Checked)
+                    User32.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
             }
-            else
-                client.State |= ClientState.Normal;
 
             //update the stored rects to reflect their size selection
             User32.GetClientRect(client.MainHandle, ref client.ClientRect);
@@ -460,40 +465,39 @@ namespace DAWindower
 
             small.Checked = false;
             large.Checked = false;
+            large4k.Checked = false;
             fullscreen.Checked = false;
 
             item.Checked = true;
         }
 
-        private void toggleHideToolStripMenuItem_Click(object sender, EventArgs e)
+        private void allToggleHide_Click(object sender, EventArgs e)
         {
             foreach (Client cli in Clients)
                 cli.Resize(0, 0, true);
         }
 
-        private void smallToolStripMenuItem_Click(object sender, EventArgs e)
+        private void allSmall_Click(object sender, EventArgs e)
         {
             foreach (Client cli in Clients)
                 cli.Resize(640, 480);
         }
 
-        private void largeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void allLarge_Click(object sender, EventArgs e)
         {
             foreach (Client cli in Clients)
                 cli.Resize(1280, 960);
         }
-
-
-        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OptionsForm opt = new OptionsForm();
-            opt.Show();
-        }
-
-        private void large4k_Click(object sender, EventArgs e)
+        private void allLarge4k_Click(object sender, EventArgs e)
         {
             foreach (Client cli in Clients)
                 cli.Resize(2560, 1920);
+        }
+
+
+        private void optionsBtn_Click(object sender, EventArgs e)
+        {
+            Options.ShowDialog(this);
         }
 
         private void commander_MouseEnter(object sender, EventArgs e)

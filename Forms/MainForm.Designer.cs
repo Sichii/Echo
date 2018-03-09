@@ -34,18 +34,19 @@
             this.sizeSelector = new System.Windows.Forms.ToolStripMenuItem();
             this.small = new System.Windows.Forms.ToolStripMenuItem();
             this.large = new System.Windows.Forms.ToolStripMenuItem();
+            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
             this.fullscreen = new System.Windows.Forms.ToolStripMenuItem();
             this.allWindows = new System.Windows.Forms.ToolStripMenuItem();
-            this.toggleHideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.smallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.largeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.large4k = new System.Windows.Forms.ToolStripMenuItem();
+            this.allToggleHide = new System.Windows.Forms.ToolStripMenuItem();
+            this.allSmall = new System.Windows.Forms.ToolStripMenuItem();
+            this.allLarge = new System.Windows.Forms.ToolStripMenuItem();
+            this.allLarge4k = new System.Windows.Forms.ToolStripMenuItem();
             this.cascade = new System.Windows.Forms.ToolStripMenuItem();
             this.allVisible = new System.Windows.Forms.ToolStripMenuItem();
             this.commander = new System.Windows.Forms.ToolStripMenuItem();
             this.placeholderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.monitors = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsBtn = new System.Windows.Forms.ToolStripMenuItem();
             this.thumbTbl = new System.Windows.Forms.TableLayoutPanel();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -60,7 +61,7 @@
             this.allWindows,
             this.cascade,
             this.monitors,
-            this.optionsToolStripMenuItem});
+            this.optionsBtn});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -80,6 +81,7 @@
             this.sizeSelector.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.small,
             this.large,
+            this.large4k,
             this.fullscreen});
             this.sizeSelector.Name = "sizeSelector";
             this.sizeSelector.Size = new System.Drawing.Size(84, 19);
@@ -105,6 +107,12 @@
             this.large.Text = "1280x960 (Large)";
             this.large.Click += new System.EventHandler(this.DropDownCheck);
             // 
+            // large4k
+            // 
+            this.large4k.Name = "large4k";
+            this.large4k.Size = new System.Drawing.Size(187, 22);
+            this.large4k.Text = "2560x1920 (Large4k)";
+            // 
             // fullscreen
             // 
             this.fullscreen.BackColor = System.Drawing.Color.White;
@@ -117,41 +125,41 @@
             // allWindows
             // 
             this.allWindows.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toggleHideToolStripMenuItem,
-            this.smallToolStripMenuItem,
-            this.largeToolStripMenuItem,
-            this.large4k});
+            this.allToggleHide,
+            this.allSmall,
+            this.allLarge,
+            this.allLarge4k});
             this.allWindows.Name = "allWindows";
             this.allWindows.Size = new System.Drawing.Size(85, 19);
             this.allWindows.Text = "All Windows";
             // 
-            // toggleHideToolStripMenuItem
+            // allToggleHide
             // 
-            this.toggleHideToolStripMenuItem.Name = "toggleHideToolStripMenuItem";
-            this.toggleHideToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.toggleHideToolStripMenuItem.Text = "Toggle Hide";
-            this.toggleHideToolStripMenuItem.Click += new System.EventHandler(this.toggleHideToolStripMenuItem_Click);
+            this.allToggleHide.Name = "allToggleHide";
+            this.allToggleHide.Size = new System.Drawing.Size(138, 22);
+            this.allToggleHide.Text = "Toggle Hide";
+            this.allToggleHide.Click += new System.EventHandler(this.allToggleHide_Click);
             // 
-            // smallToolStripMenuItem
+            // allSmall
             // 
-            this.smallToolStripMenuItem.Name = "smallToolStripMenuItem";
-            this.smallToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.smallToolStripMenuItem.Text = "Small";
-            this.smallToolStripMenuItem.Click += new System.EventHandler(this.smallToolStripMenuItem_Click);
+            this.allSmall.Name = "allSmall";
+            this.allSmall.Size = new System.Drawing.Size(138, 22);
+            this.allSmall.Text = "Small";
+            this.allSmall.Click += new System.EventHandler(this.allSmall_Click);
             // 
-            // largeToolStripMenuItem
+            // allLarge
             // 
-            this.largeToolStripMenuItem.Name = "largeToolStripMenuItem";
-            this.largeToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.largeToolStripMenuItem.Text = "Large";
-            this.largeToolStripMenuItem.Click += new System.EventHandler(this.largeToolStripMenuItem_Click);
+            this.allLarge.Name = "allLarge";
+            this.allLarge.Size = new System.Drawing.Size(138, 22);
+            this.allLarge.Text = "Large";
+            this.allLarge.Click += new System.EventHandler(this.allLarge_Click);
             // 
-            // large4k
+            // allLarge4k
             // 
-            this.large4k.Name = "large4k";
-            this.large4k.Size = new System.Drawing.Size(138, 22);
-            this.large4k.Text = "Large(4k)";
-            this.large4k.Click += new System.EventHandler(this.large4k_Click);
+            this.allLarge4k.Name = "allLarge4k";
+            this.allLarge4k.Size = new System.Drawing.Size(138, 22);
+            this.allLarge4k.Text = "Large(4k)";
+            this.allLarge4k.Click += new System.EventHandler(this.allLarge4k_Click);
             // 
             // cascade
             // 
@@ -191,12 +199,12 @@
             this.monitors.Size = new System.Drawing.Size(101, 19);
             this.monitors.Text = "Primary Display";
             // 
-            // optionsToolStripMenuItem
+            // optionsBtn
             // 
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 19);
-            this.optionsToolStripMenuItem.Text = "Options";
-            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
+            this.optionsBtn.Name = "optionsBtn";
+            this.optionsBtn.Size = new System.Drawing.Size(61, 19);
+            this.optionsBtn.Text = "Options";
+            this.optionsBtn.Click += new System.EventHandler(this.optionsBtn_Click);
             // 
             // thumbTbl
             // 
@@ -250,14 +258,15 @@
         private System.Windows.Forms.ToolStripMenuItem allWindows;
         private System.Windows.Forms.ToolStripMenuItem cascade;
         private System.Windows.Forms.ToolStripMenuItem monitors;
-        private System.Windows.Forms.ToolStripMenuItem toggleHideToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem smallToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem largeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem allToggleHide;
+        private System.Windows.Forms.ToolStripMenuItem allSmall;
+        private System.Windows.Forms.ToolStripMenuItem allLarge;
         private System.Windows.Forms.TableLayoutPanel thumbTbl;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem optionsBtn;
         private System.Windows.Forms.ToolStripMenuItem allVisible;
         private System.Windows.Forms.ToolStripMenuItem commander;
         private System.Windows.Forms.ToolStripMenuItem placeholderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem allLarge4k;
         private System.Windows.Forms.ToolStripMenuItem large4k;
     }
 }

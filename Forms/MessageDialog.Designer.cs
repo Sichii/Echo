@@ -52,7 +52,7 @@
             this.cancelBtn.AutoSize = true;
             this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.cancelBtn.Location = new System.Drawing.Point(204, 49);
+            this.cancelBtn.Location = new System.Drawing.Point(200, 49);
             this.cancelBtn.Name = "cancelBtn";
             this.cancelBtn.Size = new System.Drawing.Size(79, 29);
             this.cancelBtn.TabIndex = 9;
@@ -77,6 +77,7 @@
             // MessageDialog
             // 
             this.AcceptButton = this.okBtn;
+            this.AccessibleRole = System.Windows.Forms.AccessibleRole.Dialog;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
@@ -97,7 +98,6 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "MessageDialog";
-            this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
 

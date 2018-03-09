@@ -122,8 +122,7 @@ namespace DAWindower
     internal enum ClientState
     {
         Hidden = 1,
-        Minimized = 2,
-        Normal = 4,
-        Fullscreen = 8
+        Normal = 2,
+        Fullscreen = 4
     }
 }
