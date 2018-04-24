@@ -15,7 +15,7 @@ namespace DAWindower
     {
         private MainForm MainForm;
         private Client Client;
-        private IntPtr tHandle;
+        private IntPtr ThumbnailHandle;
 
         internal Thumbnail(MainForm mainForm, Client client)
         {
@@ -23,19 +23,19 @@ namespace DAWindower
             Client = client;
             InitializeComponent();
         }
-
         internal bool CreateT()
         {
-            int x = Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle);
             //attempt to register this darkages process to a thumbnail, 0 for success
-            if (Dwmapi.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out tHandle) == 0)
+            if (NativeMethods.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out ThumbnailHandle) == 0)
             {
                 //create a new thumbnail properties struct and set properties/location/size/etc
-                ThumbnailProperties tProperties = new ThumbnailProperties();
-                tProperties.Visible = true;
-                tProperties.Flags = ThumbnailFlags.Visible | ThumbnailFlags.RectDestination | ThumbnailFlags.Opacity | ThumbnailFlags.SourceClientAreaOnly;
-                tProperties.Opacity = 255;
-                tProperties.OnlyClientRect = true;
+                ThumbnailProperties tProperties = new ThumbnailProperties
+                {
+                    Visible = true,
+                    Flags = ThumbnailFlags.Visible | ThumbnailFlags.RectDestination | ThumbnailFlags.Opacity | ThumbnailFlags.SourceClientAreaOnly,
+                    Opacity = 255,
+                    OnlyClientRect = true
+                };
 
                 //now we determine the location of the thumbnail
                 //first we convert this usercontrol's rect to a screen rect
@@ -46,19 +46,17 @@ namespace DAWindower
                 tProperties.DestinationRect = new Rect(clientRect.Left, clientRect.Top + 24, clientRect.Left + clientRect.Width, clientRect.Top + clientRect.Height);
 
                 //update the thumbnail
-                Dwmapi.DwmUpdateThumbnailProperties(tHandle, ref tProperties);
+                NativeMethods.DwmUpdateThumbnailProperties(ThumbnailHandle, ref tProperties);
                 return true;
             }
             else
                 return false;
         }
-
         internal void UpdateT()
         {
-            Dwmapi.DwmUnregisterThumbnail(tHandle);
+            NativeMethods.DwmUnregisterThumbnail(ThumbnailHandle);
             CreateT();
         }
-
         internal void DestroyT(bool kill = true, bool refresh = true)
         {
             if (InvokeRequired)
@@ -68,7 +66,7 @@ namespace DAWindower
                 Client.IsRunning = false;
 
                 if (kill)
-                    Client.Proc.Kill();
+                    Client.Process.Kill();
 
                 //set thumbnail to invisible incase its not dead yet
                 ThumbnailProperties tProps = new ThumbnailProperties();
@@ -76,13 +74,11 @@ namespace DAWindower
                 tProps.Flags = ThumbnailFlags.Visible;
 
                 //unregister the thumbnail
-                Dwmapi.DwmUnregisterThumbnail(tHandle);
-                Dwmapi.DwmUpdateThumbnailProperties(tHandle, ref tProps);
+                NativeMethods.DwmUnregisterThumbnail(ThumbnailHandle);
+                NativeMethods.DwmUpdateThumbnailProperties(ThumbnailHandle, ref tProps);
 
                 Hide();
                 MainForm.RemoveClient(Client);
-
-                Dispose();
 
                 if (refresh)
                     MainForm.RefreshThumbnails();
@@ -94,50 +90,44 @@ namespace DAWindower
         {
             Client.Resize(0, 0, true);
         }
-
         private void small_Click(object sender, EventArgs e)
         {
             Client.Resize(640, 480);
         }
-
         private void large_Click(object sender, EventArgs e)
         {
             Client.Resize(1280, 960);
         }
-
         private void large4k_Click(object sender, EventArgs e)
         {
             Client.Resize(2560, 1920);
         }
-
         private void fullscreen_Click(object sender, EventArgs e)
         {
             Client.Resize(0, 0, false, true);
         }
-
         private void exitBtn_Click(object sender, EventArgs e)
         {
             DestroyT();
         }
-
         private void Thumbnail_Click(object sender, EventArgs e)
         {
             //if it's hidden, unhide it
-            if (!User32.IsWindowVisible(Client.MainHandle))
+            if (!NativeMethods.IsWindowVisible(Client.MainHandle))
                 Client.Resize(0, 0, true);
             //if it's fullscreen, restore it to it's current position and size
             else if (Client.State.HasFlag(ClientState.Fullscreen))
-                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
+                NativeMethods.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
             //otherwise, restore it to it's last known position and size
             else
-                User32.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
+                NativeMethods.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
 
             //wait for window to appear
             while (Client.MainHandle == IntPtr.Zero)
                 Thread.Sleep(10);
 
             //set the window as the foreground window
-            User32.SetForegroundWindow((int)Client.MainHandle);
+            NativeMethods.SetForegroundWindow((int)Client.MainHandle);
         }
         #endregion
     }

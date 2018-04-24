@@ -4,34 +4,36 @@ using System.Drawing;
 
 namespace DAWindower
 {
-    internal class Client
+    internal class Client : IDisposable
     {
-        internal ProcessMemoryStream pms;
+        internal ProcessMemoryStream PMS;
         internal DateTime Creation;
         internal MainForm MainForm;
         internal string Name;
-        internal int ProcId;
-        internal Thumbnail Thumb;
+        internal int ProcessID;
+        internal Thumbnail Thumbnail;
         internal Rect ClientRect;
         internal Rect WindowRect;
         internal ClientState State;
         internal bool IsRunning = true;
         internal IntPtr HiddenHandle;
+        internal bool Disposed = false;
+        internal bool Disposing = false;
 
         #region Client/Window Rect
         internal Point Point => WindowRect.Location;
-        internal int wWidth => WindowRect.Width;
-        internal int wHeight => WindowRect.Height;
-        internal int cWidth => ClientRect.Width;
-        internal int cHeight => ClientRect.Height;
+        internal int WinWidth => WindowRect.Width;
+        internal int WinHeight => WindowRect.Height;
+        internal int CliWidth => ClientRect.Width;
+        internal int CliHeight => ClientRect.Height;
         internal int BorderWidth => WindowRect.Width - ClientRect.Width;
         internal int TitleHeight => WindowRect.Height - ClientRect.Height;
         #endregion
 
         #region Process / Handle
-        internal IntPtr MainHandle => Proc.MainWindowHandle;
-        internal IntPtr Handle => Proc.Handle;
-        internal Process Proc => Process.GetProcessById(ProcId);
+        internal IntPtr MainHandle => Process.MainWindowHandle;
+        internal IntPtr Handle => Process.Handle;
+        internal Process Process => Process.GetProcessById(ProcessID);
         #endregion
 
         internal Client(MainForm mainForm, int processId)
@@ -39,26 +41,56 @@ namespace DAWindower
             Creation = DateTime.UtcNow;
             Name = $@"Unknown {mainForm.CurrentIndex}";
             MainForm = mainForm;
-            ProcId = processId;
-            Thumb = new Thumbnail(mainForm, this);
+            ProcessID = processId;
+            Thumbnail = new Thumbnail(mainForm, this);
 
-            pms = new ProcessMemoryStream(ProcId, ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmRead | ProcessAccessFlags.VmWrite);
+            PMS = new ProcessMemoryStream(ProcessID, ProcessAccessFlags.FullAccess);
         }
+        ~Client()
+        {
+            Dispose(false);
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Disposed)
+                return;
+
+            Disposing = disposing;
+
+            if (disposing)
+            {
+                MainForm = null;
+                PMS.Dispose();
+                Thumbnail.Dispose();
+            }
+            Disposed = true;
+        }
+        internal void UpdateSize()
+        {
+            NativeMethods.GetClientRect(MainHandle, ref ClientRect);
+            NativeMethods.GetWindowRect(MainHandle, ref WindowRect);
+        }
+
         internal void Resize(int width, int height, bool hide = false, bool fullScreen = false)
         {
             //if toggling hide
             if (hide)
             {
                 //if the window isnt visible
-                if (!User32.IsWindowVisible(MainHandle))
+                if (!NativeMethods.IsWindowVisible(MainHandle))
                 {
                     //restore window to it's current position and size
                     State &= ~ClientState.Hidden;
-                    User32.ShowWindow(HiddenHandle, ShowWindowFlags.ActiveShow);
+                    NativeMethods.ShowWindow(HiddenHandle, ShowWindowFlags.ActiveShow);
 
                     //the mainwindowhandle changes here, so we need to update the thumbnail
-                    Thumb.UpdateT();
-                    Thumb.hiddenFsLbl.Visible = false;
+                    Thumbnail.UpdateT();
+                    Thumbnail.hiddenFsLbl.Visible = false;
                 }
                 else
                 {
@@ -69,20 +101,20 @@ namespace DAWindower
                     HiddenHandle = MainHandle;
 
                     //hide the window
-                    User32.ShowWindow(MainHandle, ShowWindowFlags.Hide);
+                    NativeMethods.ShowWindow(MainHandle, ShowWindowFlags.Hide);
 
                     //again, the handle changes here (to Zero) so update the thumbnail
                     if (State.HasFlag(ClientState.Fullscreen))
                     {
-                        Thumb.UpdateT();
-                        Thumb.hiddenFsLbl.Visible = true;
+                        Thumbnail.UpdateT();
+                        Thumbnail.hiddenFsLbl.Visible = true;
                     }
                 }
             }
             else
             {
                 //if not toggling hide, then unhide the client if it is hidden
-                if (!User32.IsWindowVisible(MainHandle))
+                if (!NativeMethods.IsWindowVisible(MainHandle))
                     Resize(0, 0, true);
 
                 //if fullscreen, we arent resizing, we're just removing the titlebar and maximizing
@@ -91,8 +123,8 @@ namespace DAWindower
                     State &= ~ClientState.Normal;
                     State |= ClientState.Fullscreen;
 
-                    User32.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.Visible);
-                    User32.ShowWindowAsync(MainHandle, ShowWindowFlags.ActiveMaximized);
+                    NativeMethods.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.Visible);
+                    NativeMethods.ShowWindowAsync(MainHandle, ShowWindowFlags.ActiveMaximized);
                 }
                 else
                 {
@@ -101,15 +133,14 @@ namespace DAWindower
                     State |= ClientState.Normal;
 
                     //if it doesnt have a titlebar, set the window back to a normal state (overlappedwindow)
-                    if (!(User32.GetWindowLong(MainHandle, WindowFlags.Style).HasFlag(WindowStyleFlags.Caption)))
-                        User32.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.OverlappedWindow);
+                    if (!(NativeMethods.GetWindowLong(MainHandle, WindowFlags.Style).HasFlag(WindowStyleFlags.Caption)))
+                        NativeMethods.SetWindowLong(MainHandle, WindowFlags.Style, WindowStyleFlags.OverlappedWindow);
 
                     //set window size
-                    User32.MoveWindow(MainHandle, WindowRect.X, WindowRect.Y, width + BorderWidth, height + TitleHeight, true);
+                    NativeMethods.MoveWindow(MainHandle, WindowRect.X, WindowRect.Y, width + BorderWidth, height + TitleHeight, true);
 
                     //update rects
-                    User32.GetClientRect(MainHandle, ref ClientRect);
-                    User32.GetWindowRect(MainHandle, ref WindowRect);
+                    UpdateSize();
                 }
             }
         }

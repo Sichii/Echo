@@ -24,13 +24,21 @@ namespace DAWindower
         public int X
         {
             get { return Left; }
-            set { Right -= (Left - value); Left = value; }
+            set
+            {
+                Right -= (Left - value);
+                Left = value;
+            }
         }
 
         public int Y
         {
             get { return Top; }
-            set { Bottom -= (Top - value); Top = value; }
+            set
+            {
+                Bottom -= (Top - value);
+                Top = value;
+            }
         }
 
         public int Height
@@ -48,13 +56,21 @@ namespace DAWindower
         public Point Location
         {
             get { return new Point(Left, Top); }
-            set { X = value.X; Y = value.Y; }
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
         }
 
         public Size Size
         {
             get { return new Size(Width, Height); }
-            set { Width = value.Width; Height = value.Height; }
+            set
+            {
+                Width = value.Width;
+                Height = value.Height;
+            }
         }
 
         public static implicit operator Rectangle(Rect r) => new Rectangle(r.Left, r.Top, r.Width, r.Height);

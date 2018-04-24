@@ -9,7 +9,7 @@ namespace DAWindower
     {
         private ProcessAccessFlags Access;
         private bool Disposed;
-        private IntPtr hProcess;
+        internal IntPtr AccessHandle;
 
         public override long Position { get; set; }
         public int ProcessId { get; set; }
@@ -25,9 +25,9 @@ namespace DAWindower
         {
             Access = access;
             ProcessId = processId;
-            hProcess = Kernel32.OpenProcess(access, false, processId);
+            AccessHandle = NativeMethods.OpenProcess(access, false, processId);
 
-            if (hProcess == IntPtr.Zero)
+            if (AccessHandle == IntPtr.Zero)
                 throw new ArgumentException("Unable to open the process.");
         }
 
@@ -41,16 +41,15 @@ namespace DAWindower
             if (Disposed)
                 throw new ObjectDisposedException("ProcessMemoryStream");
 
-            if (hProcess == IntPtr.Zero)
+            if (AccessHandle == IntPtr.Zero)
                 throw new InvalidOperationException("Process is not open.");
 
             IntPtr num = Marshal.AllocHGlobal(count);
             if (num == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to allocate memory.");
 
-            int bytesRead = 0;
 
-            Kernel32.ReadProcessMemory(hProcess, (IntPtr)Position, num, count, out bytesRead);
+            NativeMethods.ReadProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out int bytesRead);
             Position += bytesRead;
             Marshal.Copy(num, buffer, offset, count);
             Marshal.FreeHGlobal(num);
@@ -83,7 +82,7 @@ namespace DAWindower
             if (Disposed)
                 throw new ObjectDisposedException("ProcessMemoryStream");
 
-            if (hProcess == IntPtr.Zero)
+            if (AccessHandle == IntPtr.Zero)
                 throw new InvalidOperationException("Process is not open.");
 
             IntPtr num = Marshal.AllocHGlobal(count);
@@ -91,9 +90,8 @@ namespace DAWindower
                 throw new InvalidOperationException("Unable to allocate memory.");
 
             Marshal.Copy(buffer, offset, num, count);
-            int bytesWritten = 0;
 
-            Kernel32.WriteProcessMemory(hProcess, (IntPtr)Position, num, count, out bytesWritten);
+            NativeMethods.WriteProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out int bytesWritten);
             Position += bytesWritten;
 
             Marshal.FreeHGlobal(num);
@@ -111,10 +109,10 @@ namespace DAWindower
         {
             if (Disposed)
                 return;
-            if (hProcess != IntPtr.Zero)
+            if (AccessHandle != IntPtr.Zero)
             {
-                Kernel32.CloseHandle(hProcess);
-                hProcess = IntPtr.Zero;
+                NativeMethods.CloseHandle(AccessHandle);
+                AccessHandle = IntPtr.Zero;
             }
             base.Close();
         }
@@ -123,10 +121,10 @@ namespace DAWindower
         {
             if (!Disposed)
             {
-                if (hProcess != IntPtr.Zero)
+                if (AccessHandle != IntPtr.Zero)
                 {
-                    Kernel32.CloseHandle(hProcess);
-                    hProcess = IntPtr.Zero;
+                    NativeMethods.CloseHandle(AccessHandle);
+                    AccessHandle = IntPtr.Zero;
                 }
                 base.Dispose(disposing);
             }
