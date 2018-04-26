@@ -1,4 +1,4 @@
-﻿namespace DAWindower
+﻿namespace Echo
 {
     partial class InputDialog
     {

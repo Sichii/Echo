@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace DAWindower
+namespace Echo
 {
     public partial class MessageDialog : Form
     {

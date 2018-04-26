@@ -1,7 +1,7 @@
 ﻿using System;
-namespace DAWindower
+namespace Echo
 {
-    internal struct ProcInfo
+    internal struct ProcessInfo
     {
         public IntPtr ProcessHandle { get; set; }
         public IntPtr ThreadHandle { get; set; }

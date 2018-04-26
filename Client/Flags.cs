@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DAWindower
+namespace Echo
 {
     [Flags]
     internal enum WaitEventResult : uint

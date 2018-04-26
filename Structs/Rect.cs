@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace DAWindower
+namespace Echo
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect

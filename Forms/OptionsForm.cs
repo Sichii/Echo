@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.IO;
 
-namespace DAWindower
+namespace Echo
 {
     internal partial class OptionsForm : Form
     {

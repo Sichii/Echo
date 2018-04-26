@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace DAWindower
+namespace Echo
 {
     internal partial class InputDialog : Form
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DAWindower
+namespace Echo
 {
-    internal struct StartInfo
+    internal struct StartupInfo
     {
         public int Size { get; set; }
         public string Reserved { get; set; }

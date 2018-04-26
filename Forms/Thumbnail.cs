@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace DAWindower
+namespace Echo
 {
     internal partial class Thumbnail : UserControl
     {
@@ -23,10 +23,10 @@ namespace DAWindower
             Client = client;
             InitializeComponent();
         }
-        internal bool CreateT()
+        internal bool Create()
         {
             //attempt to register this darkages process to a thumbnail, 0 for success
-            if (NativeMethods.DwmRegisterThumbnail(MainForm.Handle, Client.MainHandle, out ThumbnailHandle) == 0)
+            if (NativeMethods.DwmRegisterThumbnail(MainForm.Handle, Client.MainWindowHandle, out ThumbnailHandle) == 0)
             {
                 //create a new thumbnail properties struct and set properties/location/size/etc
                 ThumbnailProperties tProperties = new ThumbnailProperties
@@ -37,7 +37,7 @@ namespace DAWindower
                     OnlyClientRect = true
                 };
 
-                //now we determine the location of the thumbnail
+                //now determine the location of the thumbnail
                 //first we convert this usercontrol's rect to a screen rect
                 Rectangle screenRect = RectangleToScreen(DisplayRectangle);
                 //clientrect will represent the mainform co-ordinates of this form
@@ -52,37 +52,23 @@ namespace DAWindower
             else
                 return false;
         }
-        internal void UpdateT()
+        internal void Renew()
         {
             NativeMethods.DwmUnregisterThumbnail(ThumbnailHandle);
-            CreateT();
+            Create();
         }
-        internal void DestroyT(bool kill = true, bool refresh = true)
+        internal void Destroy(bool refresh = true)
         {
-            if (InvokeRequired)
-                Invoke((Action)(() => DestroyT(kill, refresh)));
-            else
-            {
-                Client.IsRunning = false;
+            //set thumbnail to invisible incase its not dead yet
+            ThumbnailProperties tProps = new ThumbnailProperties();
+            tProps.Visible = false;
+            tProps.Flags = ThumbnailFlags.Visible;
 
-                if (kill)
-                    Client.Process.Kill();
+            //unregister the thumbnail
+            NativeMethods.DwmUnregisterThumbnail(ThumbnailHandle);
+            NativeMethods.DwmUpdateThumbnailProperties(ThumbnailHandle, ref tProps);
 
-                //set thumbnail to invisible incase its not dead yet
-                ThumbnailProperties tProps = new ThumbnailProperties();
-                tProps.Visible = false;
-                tProps.Flags = ThumbnailFlags.Visible;
-
-                //unregister the thumbnail
-                NativeMethods.DwmUnregisterThumbnail(ThumbnailHandle);
-                NativeMethods.DwmUpdateThumbnailProperties(ThumbnailHandle, ref tProps);
-
-                Hide();
-                MainForm.RemoveClient(Client);
-
-                if (refresh)
-                    MainForm.RefreshThumbnails();
-            }
+            Hide();
         }
 
         #region Handlers
@@ -108,26 +94,27 @@ namespace DAWindower
         }
         private void exitBtn_Click(object sender, EventArgs e)
         {
-            DestroyT();
+            Client.Process.EnableRaisingEvents = false;
+            Client.Destroy();
         }
         private void Thumbnail_Click(object sender, EventArgs e)
         {
             //if it's hidden, unhide it
-            if (!NativeMethods.IsWindowVisible(Client.MainHandle))
+            if (!NativeMethods.IsWindowVisible(Client.MainWindowHandle))
                 Client.Resize(0, 0, true);
             //if it's fullscreen, restore it to it's current position and size
             else if (Client.State.HasFlag(ClientState.Fullscreen))
-                NativeMethods.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveShow);
+                NativeMethods.ShowWindowAsync(Client.MainWindowHandle, ShowWindowFlags.ActiveShow);
             //otherwise, restore it to it's last known position and size
             else
-                NativeMethods.ShowWindowAsync(Client.MainHandle, ShowWindowFlags.ActiveNormal);
+                NativeMethods.ShowWindowAsync(Client.MainWindowHandle, ShowWindowFlags.ActiveNormal);
 
             //wait for window to appear
-            while (Client.MainHandle == IntPtr.Zero)
+            while (Client.MainWindowHandle == IntPtr.Zero)
                 Thread.Sleep(10);
 
             //set the window as the foreground window
-            NativeMethods.SetForegroundWindow((int)Client.MainHandle);
+            NativeMethods.SetForegroundWindow((int)Client.MainWindowHandle);
         }
         #endregion
     }

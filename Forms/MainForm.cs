@@ -9,21 +9,26 @@ using System.Linq;
 using System.Drawing;
 using System.Text;
 
-namespace DAWindower
+namespace Echo
 {
     internal partial class MainForm : Form
     {
-        internal static readonly object Sync = new object();
         private Thread ClientHandlerThread;
         private OptionsForm Options;
         private List<Client> Clients;
-        internal List<Client> SafeIterateClients => Clients.Where(client => !client.Disposed && !client.Disposing).ToList();
-
+        internal List<Client> SafeIterateClients
+        {
+            get
+            {
+                lock (Clients)
+                    return Clients.Where(client => !client.Disposed && !client.Disposing).ToList();
+            }
+        }
         internal int CurrentIndex
         {
             get
             {
-                lock (Sync)
+                lock (Clients)
                     return Clients.Count + 1;
             }
         }
@@ -56,31 +61,10 @@ namespace DAWindower
         #region Lauunch DA
         private void LaunchDA(object sender, EventArgs e)
         {
-            var dir = Settings.Default.DarkAgesPath;
-            var dirDawn = Settings.Default.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
-
-            //correct path if required
-            if (!File.Exists(dir))
-            {
-                MessageDialog.Show(this, "Could not locate Darkages.exe");
-                return;
-            }
-
-            //check for dawnd, if it's not there then write it
-            if (!File.Exists(dirDawn))
-                File.WriteAllBytes(dirDawn, Properties.Resources.dawnd);
-
-            //create a da process in suspended mode
-            StartInfo startupInfo = new StartInfo();
-            ProcInfo procInfo = new ProcInfo();
-            startupInfo.Size = Marshal.SizeOf(startupInfo);
-            NativeMethods.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
-
-            //create client from this process
-            Client client = new Client(this, procInfo.ProcessId);
+            Client client = Client.Create(this);
 
             //create access handle and inject dawnd
-            if (!InjectDLL(NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, procInfo.ProcessId)))
+            if (!InjectDLL(NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, client.ProcessID)))
                 return;
 
             //skip intro 0x0042E625
@@ -93,45 +77,37 @@ namespace DAWindower
             client.PMS.WriteByte(0x90);
 
             //resume process thread
-            NativeMethods.ResumeThread(procInfo.ThreadHandle);
+            NativeMethods.ResumeThread(client.ThreadHandle);
 
             //wait till window is shown
-            Process p = Process.GetProcessById(procInfo.ProcessId);
-            while (p.MainWindowHandle == IntPtr.Zero)
+            while (client.MainWindowHandle == IntPtr.Zero)
                 Thread.Sleep(10);
 
-            lock (Sync)
-                Clients.Add(client);
+            //add client to the client list
+            AddClient(client);
 
             //get inner and outer rect, so we can figure out the title height and border width
             //the inner window needs to have the correct aspect ratio, not the outer
+
+            //get the size of the client and window rects
             client.UpdateSize();
 
             if (fullscreen.Checked)
-            {
-                client.State |= ClientState.Fullscreen;
-                //set window to simply visible : no title bar, resizing, border/frame, etc
-                NativeMethods.SetWindowLong(p.MainWindowHandle, WindowFlags.Style, WindowStyleFlags.Visible);
-                //maximize the window and activate it
-                NativeMethods.ShowWindowAsync(p.MainWindowHandle, ShowWindowFlags.ActiveMaximized);
-            }
+                client.Resize(0, 0, false, true);
             else
             {
                 client.State |= ClientState.Normal;
 
-                if(large4k.Checked)
-                    NativeMethods.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 2560 + client.BorderWidth, 1920 + client.TitleHeight, true);
-                else if(large.Checked)
-                    NativeMethods.MoveWindow(p.MainWindowHandle, client.WindowRect.X, client.WindowRect.Y, 1280 + client.BorderWidth, 960 + client.TitleHeight, true);
+                if (large4k.Checked)
+                    client.Resize(2560, 1920);
+                else if (large.Checked)
+                    client.Resize(1280, 960);
             }
-
-            //update the stored rects to reflect their size selection
-            client.UpdateSize();
 
             //add this control to the tablelayoutview with automatic placement
             thumbTbl.Controls.Add(client.Thumbnail, -1, -1);
             //create the thumbnail using this control's position
-            client.Thumbnail.CreateT();
+            client.Thumbnail.Create();
 
             //show this control
             client.Thumbnail.Visible = true;
@@ -236,47 +212,44 @@ namespace DAWindower
             int xMax = Screens[current].Bounds.Right + 50;
             int yMax = Screens[current].Bounds.Bottom + 50;
 
-            lock (Sync)
+            //for each client
+            foreach (Client client in SafeIterateClients.Except(skipList))
             {
-                //for each client
-                foreach (Client client in SafeIterateClients.Except(skipList))
+                //resize it to small (or large if 4k)
+                if (Screens[current].Bounds.Width > 3000)
+                    client.Resize(1280, 960);
+                else
+                    client.Resize(640, 480);
+                //add this client, point pair to the cascade dic
+                cascader.Add(client, new Point(X, Y));
+
+                //set co-ordinates for the next client
+                //tiles horizontally, then vertically, then to next screen
+                X += client.CliWidth;
+
+                if (X + client.CliWidth > xMax)
                 {
-                    //resize it to small (or large if 4k)
-                    if (Screens[current].Bounds.Width > 3000)
-                        client.Resize(1280, 960);
-                    else
-                        client.Resize(640, 480);
-                    //add this client, point pair to the cascade dic
-                    cascader.Add(client, new Point(X, Y));
+                    X = Screens[current].Bounds.Left - 10;
+                    Y += client.WinHeight;
 
-                    //set co-ordinates for the next client
-                    //tiles horizontally, then vertically, then to next screen
-                    X += client.CliWidth;
-
-                    if (X + client.CliWidth > xMax)
+                    if (Y + client.WinHeight > yMax)
                     {
+                        current++;
+
+                        if (current >= Screens.Count)
+                            current = 0;
+
+                        //if we're going to a new screen, make sure to re-grab the bounds of the new screen
                         X = Screens[current].Bounds.Left - 10;
-                        Y += client.WinHeight;
-
-                        if (Y + client.WinHeight > yMax)
-                        {
-                            current++;
-
-                            if (current >= Screens.Count)
-                                current = 0;
-
-                            //if we're going to a new screen, make sure to re-grab the bounds of the new screen
-                            X = Screens[current].Bounds.Left - 10;
-                            Y = Screens[current].Bounds.Top + 25;
-                            xMax = Screens[current].Bounds.Right + 50;
-                            yMax = Screens[current].Bounds.Bottom + 50;
-                        }
+                        Y = Screens[current].Bounds.Top + 25;
+                        xMax = Screens[current].Bounds.Right + 50;
+                        yMax = Screens[current].Bounds.Bottom + 50;
                     }
                 }
             }
 
             foreach (var kvp in cascader)
-                NativeMethods.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.WinWidth, kvp.Key.WinHeight, true);
+                NativeMethods.MoveWindow(kvp.Key.MainWindowHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.WinWidth, kvp.Key.WinHeight, true);
         }
         private void Commander(string name)
         {
@@ -288,8 +261,7 @@ namespace DAWindower
             Client commander;
 
             //grab the commander as designated by the item that was clicked
-            lock (Sync)
-                commander = Clients.FirstOrDefault(client => client.Name == name);
+            commander = SafeIterateClients.FirstOrDefault(client => client.Name == name);
 
             //represents the index of the current display
             int current = -1;
@@ -323,169 +295,138 @@ namespace DAWindower
             X = Screens[current].Bounds.Left + commander.CliWidth - 10;
             Y = Screens[current].Bounds.Top + 15;
 
-            lock (Sync)
+            //for the first 2 clients that arent the commander
+            foreach (Client client in SafeIterateClients.Where(client => client != commander).Take(2))
             {
-                //for the first 2 clients that arent the commander
-                foreach (Client client in SafeIterateClients.Where(client => client != commander).Take(2))
-                {
-                    //resize it to small (or large if 4k)
-                    if (Screens[current].Bounds.Width > 3000)
-                        client.Resize(1280, 960);
-                    else
-                        client.Resize(640, 480);
+                //resize it to small (or large if 4k)
+                if (Screens[current].Bounds.Width > 3000)
+                    client.Resize(1280, 960);
+                else
+                    client.Resize(640, 480);
 
-                    //add the first one
-                    cascader.Add(client, new Point(X, Y));
+                //add the first one
+                cascader.Add(client, new Point(X, Y));
 
-                    //set the y to be below the first one, for the position of the 2nd
-                    Y = Screens[current].Bounds.Top + client.WinHeight + 6;
-                }
-
-                //for the rest of the clients, do all visible on the next monitor
-                AllVisible(true, cascader.Keys.ToList());
+                //set the y to be below the first one, for the position of the 2nd
+                Y = Screens[current].Bounds.Top + client.WinHeight + 6;
             }
 
+            //for the rest of the clients, do all visible on the next monitor
+            AllVisible(true, cascader.Keys.ToList());
+
             foreach (var kvp in cascader)
-                NativeMethods.MoveWindow(kvp.Key.MainHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.WinWidth, kvp.Key.WinHeight, true);
+                NativeMethods.MoveWindow(kvp.Key.MainWindowHandle, kvp.Value.X, kvp.Value.Y, kvp.Key.WinWidth, kvp.Key.WinHeight, true);
         }
         #endregion
 
         #region Thumbnail Actions
         internal void RefreshThumbnails()
         {
-            if (InvokeRequired)
-                Invoke((Action)(() => RefreshThumbnails()));
-            else
+            try
             {
-                lock (Sync)
-                {
-                    //update all thumbnail locations by unregistering, then recreating
-                    foreach (Thumbnail thumb in SafeIterateClients.Where(client => client.IsRunning).Select(c => c.Thumbnail))
-                        thumb.UpdateT();
-                }
+                //update all thumbnail locations by unregistering, then recreating
+                foreach (Thumbnail thumb in SafeIterateClients.Where(client => client.IsRunning).Select(c => c.Thumbnail))
+                    thumb.Renew();
             }
+            catch { }
         }
         #endregion
 
         #region Client Actions
+        internal bool AddClient(Client client)
+        {
+            lock (Clients)
+                if (!Clients.Select(cli => cli.ProcessID).Contains(client.ProcessID))
+                {
+                    Clients.Add(client);
+                    return true;
+                }
+
+            return false;
+        }
         internal void RemoveClient(Client client)
         {
-            lock (Sync)
-            {
+            lock (Clients)
                 //safely remove a client from the list
-                client.Dispose();
                 Clients.Remove(client);
-            }
         }
         private void HandleClients()
         {
-            try
+            //wait till the form is shown
+            while (!Visible)
+                Thread.Sleep(10);
+
+            while (true)
             {
-                DateTime checkTime = DateTime.MinValue;
-
-                while (!Visible)
-                    Thread.Sleep(10);
-
-                while (Visible)
-                {
-                    bool destroyed = false;
-                    List<int> processIds = Process.GetProcessesByName("Darkages").Select(proc => proc.Id).ToList();
-                    //for any clients whose processes are no longer running, destroy their thumbnail
-                    foreach (Client client in SafeIterateClients.Where(client => !processIds.Contains(client.ProcessID)).ToList())
-                    {
-                        client.Thumbnail.DestroyT(false, false);
-                        destroyed = true;
-                    }
-
-                    if(destroyed)
-                        RefreshThumbnails();
-
-                    //only check every 5 seconds
-                    if (DateTime.UtcNow.Subtract(checkTime).TotalSeconds > 5)
-                    {
-                        //refresh client list
-                        lock (Sync)
+                //refresh client list
+                //for each active darkages process that we dont have added
+                foreach (Process proc in Process.GetProcessesByName("Darkages").Where(proc => !SafeIterateClients.Select(client => client.ProcessID).Contains(proc.Id)))
+                    //for each module in that process
+                    foreach (var mod in proc.Modules)
+                        //if that darkages window contains dawnd.dll
+                        if ((mod as ProcessModule).ModuleName.Equals("dawnd.dll", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            //for each active darkages process that we dont have added
-                            foreach (Process proc in Process.GetProcessesByName("Darkages").Where(proc => !SafeIterateClients.Select(client => client.ProcessID).Contains(proc.Id)))
+                            //add it
+                            //create a new client and add it to the client list
+                            Client newClient = new Client(this, proc.Id);
+                            newClient.Creation -= new TimeSpan(0, 0, 10);
+                            newClient.State |= ClientState.Normal;
+                            if (!AddClient(newClient))
+                                break;
+
+                            //make sure the window is shown
+                            DateTime now = DateTime.UtcNow;
+                            while (proc.MainWindowHandle == IntPtr.Zero)
                             {
-                                //for each module in that process
-                                foreach (var mod in proc.Modules)
-                                {
-                                    //if that darkages window contains dawnd.dll
-                                    if ((mod as ProcessModule).ModuleName.Equals("dawnd.dll", StringComparison.CurrentCultureIgnoreCase))
-                                    {
-                                        //add it
-                                        //create a new client and add it to the client list
-                                        Client newClient = new Client(this, proc.Id);
-                                        newClient.Creation -= new TimeSpan(0, 0, 10);
-                                        newClient.State |= ClientState.Normal;
-                                        Clients.Add(newClient);
-
-                                        //make sure the window is shown
-                                        DateTime now = DateTime.UtcNow;
-                                        while (proc.MainWindowHandle == IntPtr.Zero)
-                                        {
-                                            if (DateTime.UtcNow.Subtract(now).TotalMilliseconds > 500)
-                                                break;
-                                            Thread.Sleep(10);
-                                        }
-
-                                        //update the stored rects to reflect their size selection
-                                        newClient.UpdateSize();
-
-                                        Invoke((Action)(() =>
-                                        {
-                                            //add this control to the tablelayoutview with automatic placement
-                                            thumbTbl.Controls.Add(newClient.Thumbnail, -1, -1);
-                                            //create the thumbnail using this control's position
-                                            newClient.Thumbnail.CreateT();
-
-                                            //show this control
-                                            newClient.Thumbnail.Visible = true;
-                                            newClient.Thumbnail.Show();
-                                        }));
-                                        break;
-                                    }
-                                }
+                                if (DateTime.UtcNow.Subtract(now).TotalMilliseconds > 500)
+                                    break;
+                                Thread.Sleep(10);
                             }
 
-                            //for each client over 5 seconds old, and rendered
-                            foreach (Client client in SafeIterateClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5))
-                            {
-                                //name max length is 13 characters
-                                byte[] buffer = new byte[13];
-                                //seek to the memory position of the name
-                                client.PMS.Position = 0x73D910;
-                                //read it (marshal.copy into buffer)
-                                client.PMS.Read(buffer, 0, 13);
+                            //update the stored rects to reflect their size selection
+                            newClient.UpdateSize();
 
-                                //get the name, remove trailing null characters
-                                //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
-                                string name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
-                                //set window, thumb, and name if it's valid
-                                if (!string.IsNullOrWhiteSpace(name) && !client.Thumbnail.windowTitleLbl.Text.Equals(name, StringComparison.CurrentCultureIgnoreCase))
-                                {
-                                    Invoke((Action)(() => client.Thumbnail.windowTitleLbl.Text = name));
-                                    client.Name = name;
-                                    NativeMethods.SetWindowText(client.Process.MainWindowHandle, name);
-                                }
-                            }
+                            Invoke((Action)(() =>
+                            {
+                                //add this control to the tablelayoutview with automatic placement
+                                thumbTbl.Controls.Add(newClient.Thumbnail, -1, -1);
+                                //create the thumbnail using this control's position
+                                newClient.Thumbnail.Create();
+
+                                //show this control
+                                newClient.Thumbnail.Visible = true;
+                                newClient.Thumbnail.Show();
+                            }));
+                            break;
                         }
-                        //only check every 5seconds
-                        checkTime = DateTime.UtcNow;
-                    }
-                    if (Clients.Count == 0)
-                        Thread.Sleep(1500);
-                    else
-                        Thread.Sleep(500);
-                }
 
-                return;
+                //for each client over 5 seconds old, and rendered
+                foreach (Client client in SafeIterateClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5))
+                {
+                    //name max length is 13 characters
+                    byte[] buffer = new byte[13];
+                    //seek to the memory position of the name
+                    client.PMS.Position = 0x73D910;
+                    //read it (marshal.copy into buffer)
+                    client.PMS.Read(buffer, 0, 13);
+
+                    //get the name, remove trailing null characters
+                    //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
+                    string name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
+                    //set window, thumb, and name if it's valid
+                    if (!string.IsNullOrWhiteSpace(name) && !client.Thumbnail.windowTitleLbl.Text.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        Invoke((Action)(() =>
+                        {
+                            client.Thumbnail.windowTitleLbl.Text = name;
+                            client.Name = name;
+                            NativeMethods.SetWindowText(client.Process.MainWindowHandle, name);
+                        }));
+                    }
+                }
+                Thread.Sleep(5000);
             }
-            catch
-            {
-            }
+
         }
         #endregion
 
@@ -530,13 +471,10 @@ namespace DAWindower
             while (commander.DropDownItems.Count > 0)
                 commander.DropDownItems[0].Dispose();
 
-            lock (Sync)
+            foreach (Client client in SafeIterateClients)
             {
-                foreach (Client client in SafeIterateClients)
-                {
-                    ToolStripMenuItem item = new ToolStripMenuItem(client.Name, null, commander_Click, client.Name);
-                    commander.DropDownItems.Add(item);
-                }
+                ToolStripMenuItem item = new ToolStripMenuItem(client.Name, null, commander_Click, client.Name);
+                commander.DropDownItems.Add(item);
             }
         }
         private void ChangePrimaryMonitor(object sender, EventArgs e)
@@ -562,6 +500,10 @@ namespace DAWindower
         private void dropClosed(object sender, EventArgs e)
         {
             (sender as ToolStripDropDownItem).DropDown.Close();
+        }
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            ClientHandlerThread.Abort();
         }
         #endregion
     }
