@@ -66,7 +66,7 @@ namespace Echo
             //correct path if required
             if (!File.Exists(dir))
             {
-                MessageDialog.Show(mainform, "Could not locate Darkages.exe");
+                MessageDialog.Show(mainform, "Could not locate Darkages.exe", "Darkages Path Error");
                 return null;
             }
 
@@ -85,7 +85,9 @@ namespace Echo
         }
         internal void Destroy(bool kill = true)
         {
+            IsRunning = false;
             MainForm mf = MainForm;
+
 
             if (kill)
                 Process.Kill();

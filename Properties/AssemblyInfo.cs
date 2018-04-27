@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DAWindower")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Echo")]
+[assembly: AssemblyDescription("Window management application for Dark Ages")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DAWindower")]
+[assembly: AssemblyCompany("Sichi")]
+[assembly: AssemblyProduct("Echo")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

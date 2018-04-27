@@ -63,6 +63,9 @@ namespace Echo
         {
             Client client = Client.Create(this);
 
+            if (client == null)
+                return;
+
             //create access handle and inject dawnd
             if (!InjectDLL(NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, client.ProcessID)))
                 return;
@@ -131,7 +134,7 @@ namespace Echo
             //if failed to retreive function pointer
             if (injectionPtr == null)
             {
-                MessageDialog.Show(this, "Error 1");
+                MessageDialog.Show(this, "Injection pointer was null.", "Injection Error");
                 //return failed
                 return false;
             }
@@ -142,7 +145,7 @@ namespace Echo
             if (thread == null)
             {
                 //incorrect thread accessHandle ... return failed
-                MessageDialog.Show(this, "Error 2 Try again..");
+                MessageDialog.Show(this, "Remote injection thread was null. Try again...", "Injection Error");
                 return false;
             }
             //time-out is 10 seconds...
@@ -151,7 +154,7 @@ namespace Echo
             if (result != WaitEventResult.Signaled)
             {
                 //thread timed out...
-                MessageDialog.Show(this, " Error 3 Try again...");
+                MessageDialog.Show(this, "Injection thread timed out, or signaled incorrectly. Try again...", "Injection Error");
                 //make sure thread accessHandle is valid before closing... prevents crashes.
                 if (thread != null)
                 {

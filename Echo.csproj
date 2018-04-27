@@ -16,7 +16,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -38,6 +38,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Echo.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,12 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\Flags.cs" />
-    <Compile Include="Forms\InputDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\InputDialog.Designer.cs">
-      <DependentUpon>InputDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -93,9 +90,6 @@
     <Compile Include="Structs\Rect.cs" />
     <Compile Include="Structs\StartupInfo.cs" />
     <Compile Include="Structs\ThumbnailProperties.cs" />
-    <EmbeddedResource Include="Forms\InputDialog.resx">
-      <DependentUpon>InputDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
