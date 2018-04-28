@@ -13,6 +13,6 @@ Instructions
 Will also grab any windows that are already open that have dawnd.dll injected into them, as dawnd is requires for the resizing and cascading features~
 
 # CREDITS
-- Sichi(makiz)    Development
-- Dominic(Doms)   Development
-- Saraet         Creator of dawnd.dll
+- Sichi(makiz)
+- Dominic(Doms)
+- Saraet(creator of dawnd.dll)
