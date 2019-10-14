@@ -3,43 +3,34 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using Echo.Definitions;
+using Echo.PInvoke;
+using Echo.Properties;
+using Echo.Structs;
+using Settings = Echo.Definitions.Settings;
 
 namespace Echo
 {
     internal class Client : IDisposable
     {
-        internal ProcessMemoryStream PMS;
+        internal Rect ClientRect;
         internal DateTime Creation;
+        internal bool Disposed;
+        internal bool Disposing;
+        internal IntPtr HiddenHandle;
+        internal bool IsRunning = true;
         internal MainForm MainForm;
         internal string Name;
+        internal ProcessMemoryStream PMS;
         internal Process Process;
+        internal ClientState State;
         internal IntPtr ThreadHandle;
         internal Thumbnail Thumbnail;
-        internal Rect ClientRect;
         internal Rect WindowRect;
-        internal ClientState State;
-        internal bool IsRunning = true;
-        internal IntPtr HiddenHandle;
-        internal bool Disposed = false;
-        internal bool Disposing = false;
 
-        #region Client/Window Rect
-        internal Point Point => WindowRect.Location;
-        internal int WinWidth => WindowRect.Width;
-        internal int WinHeight => WindowRect.Height;
-        internal int CliWidth => ClientRect.Width;
-        internal int CliHeight => ClientRect.Height;
-        internal int BorderWidth => WindowRect.Width - ClientRect.Width;
-        internal int TitleHeight => WindowRect.Height - ClientRect.Height;
-        #endregion
+        ~Client() => Dispose(false);
 
-        #region Process / Handle
-        internal IntPtr MainWindowHandle => Process.MainWindowHandle;
-        internal IntPtr Handle => Process.Handle;
-        internal int ProcessID => Process.Id;
-        #endregion
-
-        internal Client(MainForm mainForm, int processId, IntPtr threadHandle = default(IntPtr))
+        internal Client(MainForm mainForm, int processId, IntPtr threadHandle = default)
         {
             Creation = DateTime.UtcNow;
             Name = $@"Unknown {mainForm.CurrentIndex}";
@@ -50,14 +41,57 @@ namespace Echo
             ThreadHandle = threadHandle;
 
             Process.EnableRaisingEvents = true;
-            Process.Exited += new EventHandler(ClientClosed);
-        }
-        ~Client()
-        {
-            Dispose(false);
+            Process.Exited += ClientClosed;
         }
 
+        public void Dispose()
+        {
+            if (Process.HasExited)
+                Process.Exited -= ClientClosed;
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Disposed)
+                return;
+
+            Disposing = disposing;
+
+            if (disposing)
+            {
+                MainForm = null;
+                PMS?.Dispose();
+                Thumbnail?.Dispose();
+            }
+
+            Disposed = true;
+        }
+
+        #region Client/Window Rect
+
+        internal Point Point => WindowRect.Location;
+        internal int WinWidth => WindowRect.Width;
+        internal int WinHeight => WindowRect.Height;
+        internal int CliWidth => ClientRect.Width;
+        internal int CliHeight => ClientRect.Height;
+        internal int BorderWidth => WindowRect.Width - ClientRect.Width;
+        internal int TitleHeight => WindowRect.Height - ClientRect.Height;
+
+        #endregion
+
+        #region Process / Handle
+
+        internal IntPtr MainWindowHandle => Process.MainWindowHandle;
+        internal IntPtr Handle => Process.Handle;
+        internal int ProcessID => Process.Id;
+
+        #endregion
+
         #region Client Actions
+
         internal static Client Create(MainForm mainform)
         {
             var dir = Settings.Default.DarkAgesPath;
@@ -72,48 +106,49 @@ namespace Echo
 
             //check for dawnd, if it's not there then write it
             if (!File.Exists(dirDawn))
-                File.WriteAllBytes(dirDawn, Properties.Resources.dawnd);
+                File.WriteAllBytes(dirDawn, Resources.dawnd);
 
             //create a da process in suspended mode
-            StartupInfo startupInfo = new StartupInfo();
-            ProcessInfo procInfo = new ProcessInfo();
+            var startupInfo = new StartupInfo();
             startupInfo.Size = Marshal.SizeOf(startupInfo);
-            NativeMethods.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo, out procInfo);
+            NativeMethods.CreateProcess(
+                dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null, ref startupInfo,
+                out var procInfo);
 
             //create client from this process
             return new Client(mainform, procInfo.ProcessId, procInfo.ThreadHandle);
         }
+
         internal void Destroy(bool kill = true)
         {
             IsRunning = false;
-            MainForm mf = MainForm;
-
+            var mf = MainForm;
 
             if (kill)
-                Process.Kill();
+                Process?.Kill();
 
-            mf.Invoke((Action)(() =>
-            {
-                Thumbnail.Destroy(false);
-                mf.RemoveClient(this);
-                mf.RefreshThumbnails();
+            mf?.Invoke(
+                (Action) (() =>
+                {
+                    Thumbnail?.Destroy(false);
+                    mf.RemoveClient(this);
+                    mf.RefreshThumbnails();
 
-                Dispose();
-            }));
+                    Dispose();
+                }));
         }
-        void ClientClosed(object sender, EventArgs e)
-        {
-            Destroy(false);
-        }
+
+        private void ClientClosed(object sender, EventArgs e) => Destroy(false);
 
         internal void UpdateSize()
         {
             NativeMethods.GetClientRect(MainWindowHandle, ref ClientRect);
             NativeMethods.GetWindowRect(MainWindowHandle, ref WindowRect);
         }
+
         internal void Resize(int width, int height, bool hide = false, bool fullScreen = false)
         {
-            ClientState previousState = State;
+            var previousState = State;
             //if toggling hide
             if (hide)
             {
@@ -127,8 +162,7 @@ namespace Echo
                     //the mainwindowhandle changes here, so we need to update the thumbnail
                     Thumbnail.Renew();
                     Thumbnail.hiddenFsLbl.Visible = false;
-                }
-                else
+                } else
                 {
                     //if the window is visible, lets hide it
                     State |= ClientState.Hidden;
@@ -146,8 +180,7 @@ namespace Echo
                         Thumbnail.hiddenFsLbl.Visible = true;
                     }
                 }
-            }
-            else
+            } else
             {
                 //if not toggling hide, then unhide the client if it is hidden
                 if (!NativeMethods.IsWindowVisible(MainWindowHandle))
@@ -155,21 +188,20 @@ namespace Echo
 
                 //if fullscreen, we arent resizing, we're just removing the titlebar and maximizing
                 if (fullScreen)
-                {   //set borderless windowed fullscreen
+                { //set borderless windowed fullscreen
                     State &= ~ClientState.Normal;
                     State |= ClientState.Fullscreen;
 
                     NativeMethods.SetWindowLong(MainWindowHandle, WindowFlags.Style, WindowStyleFlags.Visible);
                     NativeMethods.ShowWindowAsync(MainWindowHandle, ShowWindowFlags.ActiveMaximized);
-                }
-                else
+                } else
                 {
                     //otherwise
                     State &= ~ClientState.Fullscreen;
                     State |= ClientState.Normal;
 
                     //if it doesnt have a titlebar, set the window back to a normal state (overlappedwindow)
-                    if (!(NativeMethods.GetWindowLong(MainWindowHandle, WindowFlags.Style).HasFlag(WindowStyleFlags.Caption)))
+                    if (!NativeMethods.GetWindowLong(MainWindowHandle, WindowFlags.Style).HasFlag(WindowStyleFlags.Caption))
                         NativeMethods.SetWindowLong(MainWindowHandle, WindowFlags.Style, WindowStyleFlags.OverlappedWindow);
 
                     //set window size
@@ -178,32 +210,13 @@ namespace Echo
                     //update rects
                 }
             }
+
             UpdateSize();
 
             if (previousState == ClientState.Fullscreen && State != ClientState.Fullscreen)
                 Resize(width, height, hide, fullScreen);
         }
+
         #endregion
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (Disposed)
-                return;
-
-            Disposing = disposing;
-
-            if (disposing)
-            {
-                MainForm = null;
-                PMS.Dispose();
-                Thumbnail.Dispose();
-            }
-            Disposed = true;
-        }
     }
 }

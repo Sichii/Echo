@@ -2,24 +2,25 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Echo.Definitions;
 
-namespace Echo
+namespace Echo.PInvoke
 {
-    internal sealed class ProcessMemoryStream : Stream, IDisposable
+    internal sealed class ProcessMemoryStream : Stream
     {
-        private ProcessAccessFlags Access;
-        private bool Disposed;
+        private readonly ProcessAccessFlags Access;
         internal IntPtr AccessHandle;
+        private bool Disposed;
 
         public override long Position { get; set; }
         public int ProcessId { get; set; }
+
+        ~ProcessMemoryStream() => Dispose(false);
 
         public override bool CanRead => (Access & ProcessAccessFlags.VmRead) > ProcessAccessFlags.None;
         public override bool CanSeek => true;
         public override bool CanWrite => (Access & (ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmWrite)) > ProcessAccessFlags.None;
         public override long Length => throw new NotSupportedException("Length is not supported.");
-        public override void Flush() => throw new NotSupportedException("Flush is not supported.");
-        public override void SetLength(long value) => throw new NotSupportedException("Cannot set the length for this stream.");
 
         internal ProcessMemoryStream(int processId, ProcessAccessFlags access)
         {
@@ -31,10 +32,8 @@ namespace Echo
                 throw new ArgumentException("Unable to open the process.");
         }
 
-        ~ProcessMemoryStream()
-        {
-            Dispose(false);
-        }
+        public override void Flush() => throw new NotSupportedException("Flush is not supported.");
+        public override void SetLength(long value) => throw new NotSupportedException("Cannot set the length for this stream.");
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -44,12 +43,12 @@ namespace Echo
             if (AccessHandle == IntPtr.Zero)
                 throw new InvalidOperationException("Process is not open.");
 
-            IntPtr num = Marshal.AllocHGlobal(count);
+            var num = Marshal.AllocHGlobal(count);
             if (num == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to allocate memory.");
 
 
-            NativeMethods.ReadProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out int bytesRead);
+            NativeMethods.ReadProcessMemory(AccessHandle, (IntPtr) Position, num, (IntPtr) count, out var bytesRead);
             Position += bytesRead;
             Marshal.Copy(num, buffer, offset, count);
             Marshal.FreeHGlobal(num);
@@ -85,19 +84,19 @@ namespace Echo
             if (AccessHandle == IntPtr.Zero)
                 throw new InvalidOperationException("Process is not open.");
 
-            IntPtr num = Marshal.AllocHGlobal(count);
+            var num = Marshal.AllocHGlobal(count);
             if (num == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to allocate memory.");
 
             Marshal.Copy(buffer, offset, num, count);
 
-            NativeMethods.WriteProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out int bytesWritten);
+            NativeMethods.WriteProcessMemory(AccessHandle, (IntPtr) Position, num, (IntPtr) count, out var bytesWritten);
             Position += bytesWritten;
 
             Marshal.FreeHGlobal(num);
         }
 
-        public override void WriteByte(byte value) => Write(new byte[1] { value }, 0, 1);
+        public override void WriteByte(byte value) => Write(new[] { value }, 0, 1);
 
         public void WriteString(string value)
         {
@@ -114,6 +113,7 @@ namespace Echo
                 NativeMethods.CloseHandle(AccessHandle);
                 AccessHandle = IntPtr.Zero;
             }
+
             base.Close();
         }
 
@@ -126,8 +126,10 @@ namespace Echo
                     NativeMethods.CloseHandle(AccessHandle);
                     AccessHandle = IntPtr.Zero;
                 }
+
                 base.Dispose(disposing);
             }
+
             Disposed = true;
         }
     }

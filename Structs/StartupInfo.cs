@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Echo
+namespace Echo.Structs
 {
-    internal struct StartupInfo
+    public struct StartupInfo
     {
         public int Size { get; set; }
         public string Reserved { get; set; }

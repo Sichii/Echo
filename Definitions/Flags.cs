@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Echo
+namespace Echo.Definitions
 {
     [Flags]
-    internal enum WaitEventResult : uint
+    public enum WaitEventResult : uint
     {
         Signaled = 0,
         Abandoned = 128,
@@ -12,7 +12,7 @@ namespace Echo
     }
 
     [Flags]
-    internal enum ProcessAccessFlags : uint
+    public enum ProcessAccessFlags : uint
     {
         None = 0,
         Terminate = 1,
@@ -31,7 +31,7 @@ namespace Echo
     }
 
     [Flags]
-    internal enum ProcessCreationFlags
+    public enum ProcessCreationFlags
     {
         DebugProcess = 1,
         DebugOnlyThisProcess = 2,
@@ -48,11 +48,11 @@ namespace Echo
         BreakawayFromJob = 16777216,
         PreserveCodeAuthZLevel = 33554432,
         DefaultErrorMode = 67108864,
-        NoWindow = 134217728,
+        NoWindow = 134217728
     }
 
     [Flags]
-    internal enum ThumbnailFlags : int
+    public enum ThumbnailFlags
     {
         RectDestination = 1,
         RectSource = 2,
@@ -63,7 +63,7 @@ namespace Echo
     }
 
     [Flags]
-    internal enum WindowStyleFlags : uint
+    public enum WindowStyleFlags : uint
     {
         Border = 0x00800000,
         Caption = 0x00C00000,
@@ -90,7 +90,7 @@ namespace Echo
     }
 
     [Flags]
-    internal enum WindowFlags : int
+    public enum WindowFlags
     {
         None = 0,
         WndProc = -4,
@@ -102,7 +102,7 @@ namespace Echo
     }
 
     [Flags]
-    internal enum ShowWindowFlags : int
+    public enum ShowWindowFlags
     {
         Hide = 0,
         ActiveNormal = 1,
@@ -115,7 +115,7 @@ namespace Echo
         InactiveShow = 8,
         ActiveRestore = 9,
         Default = 10,
-        ForceMinimized = 11,
+        ForceMinimized = 11
     }
 
     [Flags]

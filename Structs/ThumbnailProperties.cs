@@ -1,9 +1,10 @@
 ﻿using System.Runtime.InteropServices;
+using Echo.Definitions;
 
-namespace Echo
+namespace Echo.Structs
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct ThumbnailProperties
+    public struct ThumbnailProperties
     {
         public ThumbnailFlags Flags { get; set; }
         public Rect DestinationRect { get; set; }

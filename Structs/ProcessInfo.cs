@@ -1,7 +1,8 @@
 ﻿using System;
-namespace Echo
+
+namespace Echo.Structs
 {
-    internal struct ProcessInfo
+    public struct ProcessInfo
     {
         public IntPtr ProcessHandle { get; set; }
         public IntPtr ThreadHandle { get; set; }
