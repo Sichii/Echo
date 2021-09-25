@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net5.0-windows7.0</TargetFramework>
+        <TargetFramework>net5.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <AssemblyTitle>Echo</AssemblyTitle>
         <Company>Sichi</Company>
         <Product>Echo</Product>
         <Description>Window management application for Dark Ages</Description>
         <Copyright>Copyright © 2018</Copyright>
-        <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
     <PropertyGroup>
@@ -17,9 +15,6 @@
     </PropertyGroup>
     <PropertyGroup>
         <ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
-    </PropertyGroup>
-    <PropertyGroup>
-        <StartupObject>Echo.Program</StartupObject>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <Prefer32Bit>true</Prefer32Bit>
