@@ -64,7 +64,7 @@
             this.exitBtn.Padding = new System.Windows.Forms.Padding(0);
             this.exitBtn.Size = new System.Drawing.Size(24, 24);
             this.exitBtn.Text = "╳";
-            this.exitBtn.Click += new System.EventHandler(this.exitBtn_Click);
+            this.exitBtn.Click += new System.EventHandler(this.ExitBtn_Click);
             // 
             // resizeBtn
             // 
@@ -89,7 +89,7 @@
             this.toggleHide.Name = "toggleHide";
             this.toggleHide.Size = new System.Drawing.Size(149, 22);
             this.toggleHide.Text = "Toggle Hide";
-            this.toggleHide.Click += new System.EventHandler(this.toggleHide_Click);
+            this.toggleHide.Click += new System.EventHandler(this.ToggleHide_Click);
             // 
             // small
             // 
@@ -98,7 +98,7 @@
             this.small.Name = "small";
             this.small.Size = new System.Drawing.Size(149, 22);
             this.small.Text = "Small";
-            this.small.Click += new System.EventHandler(this.small_Click);
+            this.small.Click += new System.EventHandler(this.Small_Click);
             // 
             // large
             // 
@@ -107,7 +107,7 @@
             this.large.Name = "large";
             this.large.Size = new System.Drawing.Size(149, 22);
             this.large.Text = "Large";
-            this.large.Click += new System.EventHandler(this.large_Click);
+            this.large.Click += new System.EventHandler(this.Large_Click);
             // 
             // large4k
             // 
@@ -116,7 +116,7 @@
             this.large4k.Name = "large4k";
             this.large4k.Size = new System.Drawing.Size(149, 22);
             this.large4k.Text = "Large(4k)";
-            this.large4k.Click += new System.EventHandler(this.large4k_Click);
+            this.large4k.Click += new System.EventHandler(this.Large4k_Click);
             // 
             // fullscreen
             // 
@@ -125,7 +125,7 @@
             this.fullscreen.Name = "fullscreen";
             this.fullscreen.Size = new System.Drawing.Size(149, 22);
             this.fullscreen.Text = "Full Screen";
-            this.fullscreen.Click += new System.EventHandler(this.fullscreen_Click);
+            this.fullscreen.Click += new System.EventHandler(this.Fullscreen_Click);
             // 
             // windowTitleLbl
             // 

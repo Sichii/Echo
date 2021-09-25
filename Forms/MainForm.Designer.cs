@@ -138,28 +138,28 @@
             this.allToggleHide.Name = "allToggleHide";
             this.allToggleHide.Size = new System.Drawing.Size(138, 22);
             this.allToggleHide.Text = "Toggle Hide";
-            this.allToggleHide.Click += new System.EventHandler(this.allToggleHide_Click);
+            this.allToggleHide.Click += new System.EventHandler(this.AllToggleHide_Click);
             // 
             // allSmall
             // 
             this.allSmall.Name = "allSmall";
             this.allSmall.Size = new System.Drawing.Size(138, 22);
             this.allSmall.Text = "Small";
-            this.allSmall.Click += new System.EventHandler(this.allSmall_Click);
+            this.allSmall.Click += new System.EventHandler(this.AllSmall_Click);
             // 
             // allLarge
             // 
             this.allLarge.Name = "allLarge";
             this.allLarge.Size = new System.Drawing.Size(138, 22);
             this.allLarge.Text = "Large";
-            this.allLarge.Click += new System.EventHandler(this.allLarge_Click);
+            this.allLarge.Click += new System.EventHandler(this.AllLarge_Click);
             // 
             // allLarge4k
             // 
             this.allLarge4k.Name = "allLarge4k";
             this.allLarge4k.Size = new System.Drawing.Size(138, 22);
             this.allLarge4k.Text = "Large(4k)";
-            this.allLarge4k.Click += new System.EventHandler(this.allLarge4k_Click);
+            this.allLarge4k.Click += new System.EventHandler(this.AllLarge4k_Click);
             // 
             // cascade
             // 
@@ -175,7 +175,7 @@
             this.allVisible.Name = "allVisible";
             this.allVisible.Size = new System.Drawing.Size(141, 22);
             this.allVisible.Text = "All Visible";
-            this.allVisible.Click += new System.EventHandler(this.allVisible_Click);
+            this.allVisible.Click += new System.EventHandler(this.AllVisible_Click);
             // 
             // commander
             // 
@@ -184,8 +184,8 @@
             this.commander.Name = "commander";
             this.commander.Size = new System.Drawing.Size(141, 22);
             this.commander.Text = "Commander";
-            this.commander.DropDownClosed += new System.EventHandler(this.dropClosed);
-            this.commander.MouseEnter += new System.EventHandler(this.commander_MouseEnter);
+            this.commander.DropDownClosed += new System.EventHandler(this.DropClosed);
+            this.commander.MouseEnter += new System.EventHandler(this.Commander_MouseEnter);
             // 
             // placeholderToolStripMenuItem
             // 
@@ -204,7 +204,7 @@
             this.optionsBtn.Name = "optionsBtn";
             this.optionsBtn.Size = new System.Drawing.Size(61, 19);
             this.optionsBtn.Text = "Options";
-            this.optionsBtn.Click += new System.EventHandler(this.optionsBtn_Click);
+            this.optionsBtn.Click += new System.EventHandler(this.OptionsBtn_Click);
             // 
             // thumbTbl
             // 

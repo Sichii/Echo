@@ -12,11 +12,11 @@ namespace Echo
 
         internal static DialogResult Show(IWin32Window owner, string msg, string caption = "Message Dialog")
         {
-            using (var message = new MessageDialog(msg))
-            {
-                message.Text = caption;
-                return message.ShowDialog(owner);
-            }
+            using var message = new MessageDialog(msg);
+
+            message.Text = caption;
+
+            return message.ShowDialog(owner);
         }
     }
 }

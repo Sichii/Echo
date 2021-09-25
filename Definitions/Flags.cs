@@ -78,14 +78,14 @@ namespace Echo.Definitions
         Minimized = 0x20000000,
         Maximized = 0x01000000,
         MaximizeBox = 0x00010000,
-        MinimizeBox = 0x00020000,
+        MinimizeBox = Group,
         Overlapped = 0x00000000,
         OverlappedWindow = Overlapped | Caption | SystemMenu | Sizeable | MinimizeBox | MaximizeBox | Visible,
         Popup = 0x80000000,
         PopupWindow = Popup | Border | SystemMenu | Visible,
         Sizeable = 0x00040000,
         SystemMenu = 0x00080000,
-        TabStop = 0x00010000,
+        TabStop = MaximizeBox,
         Visible = 0x10000000
     }
 

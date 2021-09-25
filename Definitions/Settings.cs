@@ -11,10 +11,10 @@ namespace Echo.Definitions
         [UserScopedSetting, DebuggerNonUserCode, DefaultSettingValue(@"C:\Program Files (x86)\KRU\Dark Ages\Darkages.exe")]
         public string DarkAgesPath
         {
-            get => (string) this["DarkAgesPath"];
+            get => (string)this["DarkAgesPath"];
             set => this["DarkAgesPath"] = value;
         }
 
-        public static Settings Default { get; } = (Settings) Synchronized(new Settings());
+        public static Settings Default { get; } = (Settings)Synchronized(new Settings());
     }
 }

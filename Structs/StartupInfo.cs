@@ -4,6 +4,7 @@ namespace Echo.Structs
 {
     public struct StartupInfo
     {
+        #region Do Not ReOrder
         public int Size { get; set; }
         public string Reserved { get; set; }
         public string Desktop { get; set; }
@@ -22,5 +23,7 @@ namespace Echo.Structs
         public IntPtr StdInputHandle { get; set; }
         public IntPtr StdOutputHandle { get; set; }
         public IntPtr StdErrorHandle { get; set; }
+
+        #endregion
     }
 }
