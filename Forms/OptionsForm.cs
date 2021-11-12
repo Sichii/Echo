@@ -10,7 +10,7 @@ namespace Echo
         public OptionsForm()
         {
             InitializeComponent();
-            darkAgesPath.Text = Settings.Default.DarkAgesPath;
+            darkAgesPath.Text = Settings.Instance.DarkAgesPath;
         }
 
         private void BrowseDADirectoryButton_Click(object sender, EventArgs e)
@@ -18,7 +18,7 @@ namespace Echo
             var openFileDialog = new OpenFileDialog
             {
                 Filter = @"Executable File (*.exe)|*.exe",
-                InitialDirectory = Path.GetDirectoryName(Settings.Default.DarkAgesPath)
+                InitialDirectory = Path.GetDirectoryName(Settings.Instance.DarkAgesPath)
             };
 
             if (openFileDialog.ShowDialog() != DialogResult.OK)
@@ -29,8 +29,8 @@ namespace Echo
 
         public void Save()
         {
-            Settings.Default.DarkAgesPath = darkAgesPath.Text;
-            Settings.Default.Save();
+            Settings.Instance.DarkAgesPath = darkAgesPath.Text;
+            Settings.Instance.Save();
         }
 
         private void SaveSettingsButton_Click(object sender, EventArgs e)

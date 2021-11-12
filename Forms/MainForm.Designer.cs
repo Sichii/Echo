@@ -90,8 +90,6 @@
             // small
             // 
             this.small.BackColor = System.Drawing.Color.White;
-            this.small.Checked = true;
-            this.small.CheckState = System.Windows.Forms.CheckState.Checked;
             this.small.ForeColor = System.Drawing.Color.Black;
             this.small.Name = "small";
             this.small.Size = new System.Drawing.Size(187, 22);
@@ -109,9 +107,12 @@
             // 
             // large4k
             // 
+            this.large4k.BackColor = System.Drawing.Color.White;
+            this.large4k.ForeColor = System.Drawing.Color.Black;
             this.large4k.Name = "large4k";
             this.large4k.Size = new System.Drawing.Size(187, 22);
             this.large4k.Text = "2560x1920 (Large4k)";
+            this.large4k.Click += new System.EventHandler(this.DropDownCheck);
             // 
             // fullscreen
             // 
@@ -136,28 +137,28 @@
             // allToggleHide
             // 
             this.allToggleHide.Name = "allToggleHide";
-            this.allToggleHide.Size = new System.Drawing.Size(138, 22);
+            this.allToggleHide.Size = new System.Drawing.Size(137, 22);
             this.allToggleHide.Text = "Toggle Hide";
             this.allToggleHide.Click += new System.EventHandler(this.AllToggleHide_Click);
             // 
             // allSmall
             // 
             this.allSmall.Name = "allSmall";
-            this.allSmall.Size = new System.Drawing.Size(138, 22);
+            this.allSmall.Size = new System.Drawing.Size(137, 22);
             this.allSmall.Text = "Small";
             this.allSmall.Click += new System.EventHandler(this.AllSmall_Click);
             // 
             // allLarge
             // 
             this.allLarge.Name = "allLarge";
-            this.allLarge.Size = new System.Drawing.Size(138, 22);
+            this.allLarge.Size = new System.Drawing.Size(137, 22);
             this.allLarge.Text = "Large";
             this.allLarge.Click += new System.EventHandler(this.AllLarge_Click);
             // 
             // allLarge4k
             // 
             this.allLarge4k.Name = "allLarge4k";
-            this.allLarge4k.Size = new System.Drawing.Size(138, 22);
+            this.allLarge4k.Size = new System.Drawing.Size(137, 22);
             this.allLarge4k.Text = "Large(4k)";
             this.allLarge4k.Click += new System.EventHandler(this.AllLarge4k_Click);
             // 

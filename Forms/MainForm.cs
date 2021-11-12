@@ -41,7 +41,7 @@ namespace Echo
         {
             Clients = new List<Client>();
             InitializeComponent();
-            Settings.Default.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Default.DarkAgesPath);
+            Settings.Instance.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Instance.DarkAgesPath);
             ClientHandlerThread = new Thread(HandleClients);
             ClientHandlerThread.Start();
 
@@ -55,15 +55,23 @@ namespace Echo
             {
                 var item = new ToolStripMenuItem($@"{screen.DeviceName}", null, ChangePrimaryMonitor, $@"Monitor {count++}");
 
-                if (screen.Primary)
+                if((string.IsNullOrEmpty(Settings.Instance.PrimaryDeviceName) && screen.Primary) 
+                    || screen.DeviceName.Equals(Settings.Instance.PrimaryDeviceName, StringComparison.OrdinalIgnoreCase))
                     item.Checked = true;
 
                 monitors.DropDownItems.Add(item);
             }
 
+            foreach(var sizeOption in sizeSelector.DropDownItems.OfType<ToolStripMenuItem>())
+                if(sizeOption.Text.Equals(Settings.Instance.SizeSelection, StringComparison.OrdinalIgnoreCase))
+                { 
+                    sizeOption.Checked = true;
+                    break;
+                }
+
             if (args.Length > 0)
             {
-                Settings.Default.DarkAgesPath = args[0];
+                Settings.Instance.DarkAgesPath = args[0];
                 launchBtn.Enabled = false;
                 optionsBtn.Enabled = false;
                 sizeSelector.Enabled = false;
@@ -395,6 +403,9 @@ namespace Echo
 
             while (Visible)
             {
+                if(ClientHandlerThread == null)
+                    return;
+
                 //refresh client list
                 //for each active darkages process that we dont have added
                 foreach (var proc in Process.GetProcessesByName("Darkages")
@@ -427,7 +438,7 @@ namespace Echo
                             //update the stored rects to reflect their size selection
                             newClient.UpdateSize();
 
-                            Invoke((Action)(() =>
+                            Invoke(() =>
                             {
                                 //add this control to the tablelayoutview with automatic placement
                                 thumbTbl.Controls.Add(newClient.Thumbnail, -1, -1);
@@ -437,7 +448,7 @@ namespace Echo
                                 //show this control
                                 newClient.Thumbnail.Visible = true;
                                 newClient.Thumbnail.Show();
-                            }));
+                            });
 
                             break;
                         }
@@ -483,6 +494,7 @@ namespace Echo
             fullscreen.Checked = false;
 
             item.Checked = true;
+            Settings.Instance.SizeSelection = item.Text;
         }
 
         private void AllToggleHide_Click(object sender, EventArgs e)
@@ -531,6 +543,8 @@ namespace Echo
                 dropItem.Checked = false;
 
             item.Checked = true;
+
+            Settings.Instance.PrimaryDeviceName = item.Text;
         }
 
         private void AllVisible_Click(object sender, EventArgs e) => AllVisible();
@@ -547,9 +561,12 @@ namespace Echo
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            ClientHandlerThread.Interrupt();
-            ClientHandlerThread.Join();
+            Settings.Instance.Save();
+
+            var localThread =  ClientHandlerThread;
             ClientHandlerThread = null;
+            localThread.Interrupt();
+            localThread.Join();
 
             Options.Dispose();
             Options = null;

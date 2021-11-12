@@ -15,6 +15,21 @@ namespace Echo.Definitions
             set => this["DarkAgesPath"] = value;
         }
 
-        public static Settings Default { get; } = (Settings)Synchronized(new Settings());
+        [UserScopedSetting, DebuggerNonUserCode, DefaultSettingValue(null)]
+        public string PrimaryDeviceName
+        {
+            get => (string)this["PrimaryDeviceName"];
+            set => this["PrimaryDeviceName"] = value;
+        }
+
+        [UserScopedSetting, DebuggerNonUserCode, DefaultSettingValue("640x480 (Small)")]
+        public string SizeSelection
+        {
+            get => (string)this["SizeSelection"];
+            set => this["SizeSelection"] = value;
+        }
+
+        public static Settings Instance { get;} = (Settings)Synchronized(new Settings());
+        public static Settings Default { get; } = new Settings();
     }
 }

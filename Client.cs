@@ -91,8 +91,8 @@ namespace Echo
         {
             lock (MainForm.Sync)
             {
-                var dir = Settings.Default.DarkAgesPath;
-                var dirDawn = Settings.Default.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
+                var dir = Settings.Instance.DarkAgesPath;
+                var dirDawn = Settings.Instance.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
 
                 //correct path if required
                 if (!File.Exists(dir))
