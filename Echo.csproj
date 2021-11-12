@@ -15,37 +15,37 @@
     </PropertyGroup>
     <PropertyGroup>
         <ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
+        <StartupObject></StartupObject>
+        <Nullable>disable</Nullable>
+        <AssemblyVersion>1.0.0.1</AssemblyVersion>
+        <FileVersion>1.0.0.1</FileVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <Prefer32Bit>true</Prefer32Bit>
       <PlatformTarget>x86</PlatformTarget>
+      <WarningLevel>5</WarningLevel>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <PlatformTarget>x86</PlatformTarget>
       <Prefer32bit>true</Prefer32bit>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
     <ItemGroup>
-        <Compile Update="Forms\MainForm.cs">
-            <SubType>Form</SubType>
-        </Compile>
+        <Compile Update="Forms\MainForm.cs" />
         <Compile Update="Forms\MainForm.Designer.cs">
             <DependentUpon>MainForm.cs</DependentUpon>
         </Compile>
-        <Compile Update="Forms\MessageDialog.cs">
-            <SubType>Form</SubType>
-        </Compile>
+        <Compile Update="Forms\MessageDialog.cs" />
         <Compile Update="Forms\MessageDialog.Designer.cs">
             <DependentUpon>MessageDialog.cs</DependentUpon>
         </Compile>
-        <Compile Update="Forms\OptionsForm.cs">
-            <SubType>Form</SubType>
-        </Compile>
+        <Compile Update="Forms\OptionsForm.cs" />
         <Compile Update="Forms\OptionsForm.Designer.cs">
             <DependentUpon>OptionsForm.cs</DependentUpon>
         </Compile>
-        <Compile Update="Forms\Thumbnail.cs">
-            <SubType>UserControl</SubType>
-        </Compile>
+        <Compile Update="Forms\Thumbnail.cs" />
         <Compile Update="Forms\Thumbnail.Designer.cs">
             <DependentUpon>Thumbnail.cs</DependentUpon>
         </Compile>

@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Echo.Definitions;
 using Echo.PInvoke;
@@ -14,7 +15,8 @@ namespace Echo
     public partial class MainForm : Form
     {
         internal static readonly object Sync = new();
-        private Thread ClientHandlerThread;
+        private readonly CancellationTokenSource CTS = new();
+        private Task ClientHandlerTask;
         private List<Client> Clients;
         private OptionsForm Options;
 
@@ -42,8 +44,7 @@ namespace Echo
             Clients = new List<Client>();
             InitializeComponent();
             Settings.Instance.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Instance.DarkAgesPath);
-            ClientHandlerThread = new Thread(HandleClients);
-            ClientHandlerThread.Start();
+            ClientHandlerTask = Task.Run(() => HandleClients(CTS.Token));
 
             //populate displays
             while (monitors.DropDownItems.Count > 0)
@@ -395,15 +396,27 @@ namespace Echo
                 Clients.Remove(client);
         }
 
-        private void HandleClients()
+        private async Task HandleClients(CancellationToken cancellationToken)
         {
             //wait till the form is shown
             while (!Visible)
-                Thread.Sleep(10);
+            {
+                if(cancellationToken.IsCancellationRequested)
+                    return;
+
+                try
+                { 
+                    await Task.Delay(10, cancellationToken);
+                } catch
+                {
+                    //ignored
+                    return;
+                }
+            }
 
             while (Visible)
             {
-                if(ClientHandlerThread == null)
+                if(cancellationToken.IsCancellationRequested)
                     return;
 
                 //refresh client list
@@ -478,7 +491,15 @@ namespace Echo
                         }));
                 }
 
-                Thread.Sleep(5000);
+                try
+                {
+                    await Task.Delay(5000, cancellationToken);
+                } catch
+                {
+                    //ignored
+                    if(cancellationToken.IsCancellationRequested)
+                        return;
+                }
             }
         }
         #endregion
@@ -563,10 +584,7 @@ namespace Echo
         {
             Settings.Instance.Save();
 
-            var localThread =  ClientHandlerThread;
-            ClientHandlerThread = null;
-            localThread.Interrupt();
-            localThread.Join();
+            CTS.Cancel();
 
             Options.Dispose();
             Options = null;
