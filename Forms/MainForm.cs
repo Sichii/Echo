@@ -414,7 +414,7 @@ namespace Echo
                 }
             }
 
-            while (Visible)
+            while (true)
             {
                 if(cancellationToken.IsCancellationRequested)
                     return;
