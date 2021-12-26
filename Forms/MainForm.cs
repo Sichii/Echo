@@ -406,7 +406,7 @@ namespace Echo
 
                 try
                 { 
-                    await Task.Delay(10, cancellationToken);
+                    await Task.Delay(10, cancellationToken).ConfigureAwait(false);
                 } catch
                 {
                     //ignored
@@ -416,89 +416,94 @@ namespace Echo
 
             while (true)
             {
-                if(cancellationToken.IsCancellationRequested)
-                    return;
+                try
+                { 
+                    if(cancellationToken.IsCancellationRequested)
+                        return;
 
-                //refresh client list
-                //for each active darkages process that we dont have added
-                foreach (var proc in Process.GetProcessesByName("Darkages")
-                        .Where(proc => !SafeIterateClients.Select(client => client.ProcessId).Contains(proc.Id)))
-                    //for each module in that process
-                    foreach (var mod in proc.Modules)
-                        //if that darkages window contains dawnd.dll
-                        if (((ProcessModule)mod).ModuleName!.Equals("dawnd.dll", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            //add it
-                            //create a new client and add it to the client list
-                            var newClient = new Client(this, proc.Id);
-                            newClient.Creation -= new TimeSpan(0, 0, 10);
-                            newClient.State |= ClientState.Normal;
-
-                            if (!AddClient(newClient))
-                                break;
-
-                            //make sure the window is shown
-                            var now = DateTime.UtcNow;
-
-                            while (proc.MainWindowHandle == IntPtr.Zero)
+                    //refresh client list
+                    //for each active darkages process that we dont have added
+                    foreach (var proc in Process.GetProcessesByName("Darkages")
+                            .Where(proc => !SafeIterateClients.Select(client => client.ProcessId).Contains(proc.Id)))
+                        //for each module in that process
+                        foreach (var mod in proc.Modules)
+                            //if that darkages window contains dawnd.dll
+                            if (((ProcessModule)mod).ModuleName!.Equals("dawnd.dll", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                if (DateTime.UtcNow.Subtract(now).TotalMilliseconds > 500)
+                                //add it
+                                //create a new client and add it to the client list
+                                var newClient = new Client(this, proc.Id);
+                                newClient.Creation -= new TimeSpan(0, 0, 10);
+                                newClient.State |= ClientState.Normal;
+
+                                if (!AddClient(newClient))
                                     break;
 
-                                Thread.Sleep(10);
+                                //make sure the window is shown
+                                var now = DateTime.UtcNow;
+
+                                while (proc.MainWindowHandle == IntPtr.Zero)
+                                {
+                                    if (DateTime.UtcNow.Subtract(now).TotalMilliseconds > 500)
+                                        break;
+
+                                    Thread.Sleep(10);
+                                }
+
+                                //update the stored rects to reflect their size selection
+                                newClient.UpdateSize();
+
+                                Invoke(() =>
+                                {
+                                    //add this control to the tablelayoutview with automatic placement
+                                    thumbTbl.Controls.Add(newClient.Thumbnail, -1, -1);
+                                    //create the thumbnail using this control's position
+                                    newClient.Thumbnail.Create();
+
+                                    //show this control
+                                    newClient.Thumbnail.Visible = true;
+                                    newClient.Thumbnail.Show();
+                                });
+
+                                break;
                             }
 
-                            //update the stored rects to reflect their size selection
-                            newClient.UpdateSize();
+                    //for each client over 5 seconds old, and rendered
+                    foreach (var client in SafeIterateClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5))
+                    {
+                        //name max length is 13 characters
+                        var buffer = new byte[13];
+                        //seek to the memory position of the name
+                        client.Pms.Position = 0x73D910;
+                        //read it (marshal.copy into buffer)
+                        client.Pms.Read(buffer, 0, 13);
 
+                        //get the name, remove trailing null characters
+                        //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
+                        var name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
+
+                        //set window, thumb, and name if it's valid
+                        if (!string.IsNullOrWhiteSpace(name)
+                            && !client.Thumbnail.windowTitleLbl.Text.Equals(name, StringComparison.CurrentCultureIgnoreCase))
                             Invoke(() =>
                             {
-                                //add this control to the tablelayoutview with automatic placement
-                                thumbTbl.Controls.Add(newClient.Thumbnail, -1, -1);
-                                //create the thumbnail using this control's position
-                                newClient.Thumbnail.Create();
-
-                                //show this control
-                                newClient.Thumbnail.Visible = true;
-                                newClient.Thumbnail.Show();
+                                client.Thumbnail.windowTitleLbl.Text = name;
+                                client.Name = name;
+                                _ = NativeMethods.SetWindowText(client.Process.MainWindowHandle, name);
                             });
+                    }
 
-                            break;
-                        }
-
-                //for each client over 5 seconds old, and rendered
-                foreach (var client in SafeIterateClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5))
-                {
-                    //name max length is 13 characters
-                    var buffer = new byte[13];
-                    //seek to the memory position of the name
-                    client.Pms.Position = 0x73D910;
-                    //read it (marshal.copy into buffer)
-                    client.Pms.Read(buffer, 0, 13);
-
-                    //get the name, remove trailing null characters
-                    //split incase they relogged in an already-used client (overwrites same memory space and ends with a null character)
-                    var name = Encoding.UTF8.GetString(buffer).Trim('\0').Split('\0')[0];
-
-                    //set window, thumb, and name if it's valid
-                    if (!string.IsNullOrWhiteSpace(name)
-                        && !client.Thumbnail.windowTitleLbl.Text.Equals(name, StringComparison.CurrentCultureIgnoreCase))
-                        Invoke((Action)(() =>
-                        {
-                            client.Thumbnail.windowTitleLbl.Text = name;
-                            client.Name = name;
-                            _ = NativeMethods.SetWindowText(client.Process.MainWindowHandle, name);
-                        }));
-                }
-
-                try
-                {
-                    await Task.Delay(5000, cancellationToken);
+                    try
+                    {
+                        await Task.Delay(5000, cancellationToken).ConfigureAwait(false);
+                    } catch
+                    {
+                        if(cancellationToken.IsCancellationRequested)
+                            return;
+                    }
                 } catch
                 {
                     //ignored
-                    if(cancellationToken.IsCancellationRequested)
-                        return;
                 }
             }
         }
