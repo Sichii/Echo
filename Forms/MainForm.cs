@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Echo.Configuration;
 using Echo.Definitions;
 using Echo.PInvoke;
 
@@ -19,6 +21,7 @@ namespace Echo
         private Task ClientHandlerTask;
         private List<Client> Clients;
         private OptionsForm Options;
+        internal readonly VersionsCollection VersionsCollection;
 
         internal int CurrentIndex
         {
@@ -41,6 +44,8 @@ namespace Echo
         // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         public MainForm(string[] args)
         {
+            var section = (EchoSection) ConfigurationManager.GetSection("Echo");
+            VersionsCollection = section.VersionsCollection;
             Clients = new List<Client>();
             InitializeComponent();
             Settings.Instance.DarkAgesPath = Environment.ExpandEnvironmentVariables(Settings.Instance.DarkAgesPath);
@@ -112,16 +117,7 @@ namespace Echo
             //create access handle and inject dawnd
             if (!InjectDll(NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, client.ProcessId)))
                 return;
-
-            //skip intro 0x0042E625
-            client.Pms.Position = 0x0042E61F;
-            client.Pms.WriteByte(0x90);
-            client.Pms.WriteByte(0x90);
-            client.Pms.WriteByte(0x90);
-            client.Pms.WriteByte(0x90);
-            client.Pms.WriteByte(0x90);
-            client.Pms.WriteByte(0x90);
-
+            
             //resume process thread
             _ = NativeMethods.ResumeThread(client.ThreadHandle);
 
@@ -471,10 +467,12 @@ namespace Echo
                     //for each client over 5 seconds old, and rendered
                     foreach (var client in SafeIterateClients.Where(c => DateTime.UtcNow.Subtract(c.Creation).TotalSeconds > 5))
                     {
+                        client.TrySetVersion();
+                        
                         //name max length is 13 characters
                         var buffer = new byte[13];
                         //seek to the memory position of the name
-                        client.Pms.Position = 0x73D910;
+                        client.Pms.Position = client.Version.CharacterNameAddressValue;
                         //read it (marshal.copy into buffer)
                         client.Pms.Read(buffer, 0, 13);
 

@@ -2,7 +2,10 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using Echo.Configuration;
 using Echo.Definitions;
 using Echo.PInvoke;
 using Echo.Properties;
@@ -27,6 +30,8 @@ namespace Echo
         internal IntPtr ThreadHandle;
         internal readonly Thumbnail Thumbnail;
         internal Rect WindowRect;
+        internal VersionElement Version;
+        internal byte VersionAttempts;
 
         ~Client() => Dispose(false);
 
@@ -42,6 +47,7 @@ namespace Echo
 
             Process.EnableRaisingEvents = true;
             Process.Exited += ClientClosed;
+            TryAutoDetectVersionEarly();
         }
 
         public void Dispose()
@@ -113,8 +119,66 @@ namespace Echo
                 NativeMethods.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null,
                     ref startupInfo, out var procInfo);
 
-                //create client from this process
-                return new Client(mainform, procInfo.ProcessId, procInfo.ThreadHandle);
+                var client = new Client(mainform, procInfo.ProcessId, procInfo.ThreadHandle);
+                client.SetSkipIntro();
+
+                return client;
+            }
+        }
+
+        internal void TryAutoDetectVersionEarly()
+        {
+            foreach (var version in MainForm.VersionsCollection.OfType<VersionElement>())
+            {
+                using var clientFileStream = File.Open(Settings.Instance.DarkAgesPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var hashProvider = MD5.Create();
+
+                hashProvider.ComputeHash(clientFileStream);
+                var clientHash = BitConverter.ToString(hashProvider.Hash!).Replace("-", string.Empty);
+
+                if(clientHash.Equals(version.ClientHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    Version = version;
+                    break;
+                }
+            }
+        }
+        
+        internal void TrySetVersion()
+        {
+            if ((Version != null) || (VersionAttempts > 2))
+                return;
+            
+            foreach (var version in MainForm.VersionsCollection.OfType<VersionElement>())
+            {
+                Pms.Position = version.VersionAddressValue;
+                var buffer = new byte[4];
+                Pms.Read(buffer, 0, 4);
+
+                var versionValue = BitConverter.ToUInt32(buffer);
+
+                if(versionValue == version.ParsedVersionValue)
+                {
+                    Version = version;
+                    break;
+                }
+            }
+
+            VersionAttempts++;
+        }
+
+        internal void SetSkipIntro()
+        {
+            if (Version != null)
+            {
+                //skip intro
+                Pms.Position = Version.SkipIntroAddressValue;
+                Pms.WriteByte(0x90);
+                Pms.WriteByte(0x90);
+                Pms.WriteByte(0x90);
+                Pms.WriteByte(0x90);
+                Pms.WriteByte(0x90);
+                Pms.WriteByte(0x90);
             }
         }
 
@@ -126,7 +190,7 @@ namespace Echo
             if (kill)
                 Process?.Kill();
 
-            mf?.Invoke((Action)(() =>
+            mf?.Invoke(() =>
             {
                 lock (MainForm.Sync)
                 {
@@ -136,7 +200,7 @@ namespace Echo
 
                     Dispose();
                 }
-            }));
+            });
         }
 
         private void ClientClosed(object sender, EventArgs e) => Destroy(false);
