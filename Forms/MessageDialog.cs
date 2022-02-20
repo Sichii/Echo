@@ -1,22 +1,21 @@
 ﻿using System.Windows.Forms;
 
-namespace Echo
+namespace Echo;
+
+public partial class MessageDialog : Form
 {
-    public partial class MessageDialog : Form
+    public MessageDialog(string msg)
     {
-        public MessageDialog(string msg)
-        {
-            InitializeComponent();
-            messageLbl.Text = msg;
-        }
+        InitializeComponent();
+        messageLbl.Text = msg;
+    }
 
-        internal static DialogResult Show(IWin32Window owner, string msg, string caption = "Message Dialog")
-        {
-            using var message = new MessageDialog(msg);
+    internal static DialogResult Show(IWin32Window owner, string msg, string caption = "Message Dialog")
+    {
+        using var message = new MessageDialog(msg);
 
-            message.Text = caption;
+        message.Text = caption;
 
-            return message.ShowDialog(owner);
-        }
+        return message.ShowDialog(owner);
     }
 }

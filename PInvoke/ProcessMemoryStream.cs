@@ -4,138 +4,137 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Echo.Definitions;
 
-namespace Echo.PInvoke
+namespace Echo.PInvoke;
+
+internal sealed class ProcessMemoryStream : Stream
 {
-    internal sealed class ProcessMemoryStream : Stream
+    private readonly ProcessAccessFlags Access;
+    internal IntPtr AccessHandle;
+    private bool Disposed;
+
+    public override long Position { get; set; }
+    public int ProcessId { get; set; }
+
+    ~ProcessMemoryStream() => Dispose(false);
+
+    public override bool CanRead => (Access & ProcessAccessFlags.VmRead) > ProcessAccessFlags.None;
+    public override bool CanSeek => true;
+    public override bool CanWrite => (Access & (ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmWrite)) > ProcessAccessFlags.None;
+    public override long Length => throw new NotSupportedException("Length is not supported.");
+
+    internal ProcessMemoryStream(int processId, ProcessAccessFlags access)
     {
-        private readonly ProcessAccessFlags Access;
-        internal IntPtr AccessHandle;
-        private bool Disposed;
+        Access = access;
+        ProcessId = processId;
+        AccessHandle = NativeMethods.OpenProcess(access, false, processId);
 
-        public override long Position { get; set; }
-        public int ProcessId { get; set; }
+        if (AccessHandle == IntPtr.Zero)
+            throw new ArgumentException("Unable to open the process.");
+    }
 
-        ~ProcessMemoryStream() => Dispose(false);
+    public override void Close()
+    {
+        if (Disposed)
+            return;
 
-        public override bool CanRead => (Access & ProcessAccessFlags.VmRead) > ProcessAccessFlags.None;
-        public override bool CanSeek => true;
-        public override bool CanWrite => (Access & (ProcessAccessFlags.VmOperation | ProcessAccessFlags.VmWrite)) > ProcessAccessFlags.None;
-        public override long Length => throw new NotSupportedException("Length is not supported.");
-
-        internal ProcessMemoryStream(int processId, ProcessAccessFlags access)
+        if (AccessHandle != IntPtr.Zero)
         {
-            Access = access;
-            ProcessId = processId;
-            AccessHandle = NativeMethods.OpenProcess(access, false, processId);
-
-            if (AccessHandle == IntPtr.Zero)
-                throw new ArgumentException("Unable to open the process.");
+            NativeMethods.CloseHandle(AccessHandle);
+            AccessHandle = IntPtr.Zero;
         }
 
-        public override void Close()
-        {
-            if (Disposed)
-                return;
+        base.Close();
+    }
 
+    protected override void Dispose(bool disposing)
+    {
+        if (!Disposed)
+        {
             if (AccessHandle != IntPtr.Zero)
             {
                 NativeMethods.CloseHandle(AccessHandle);
                 AccessHandle = IntPtr.Zero;
             }
 
-            base.Close();
+            base.Dispose(disposing);
         }
 
-        protected override void Dispose(bool disposing)
+        Disposed = true;
+    }
+
+    public override void Flush() => throw new NotSupportedException("Flush is not supported.");
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        if (Disposed)
+            throw new ObjectDisposedException("ProcessMemoryStream");
+
+        if (AccessHandle == IntPtr.Zero)
+            throw new InvalidOperationException("Process is not open.");
+
+        var num = Marshal.AllocHGlobal(count);
+
+        if (num == IntPtr.Zero)
+            throw new InvalidOperationException("Unable to allocate memory.");
+
+        NativeMethods.ReadProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out var bytesRead);
+        Position += bytesRead;
+        Marshal.Copy(num, buffer, offset, count);
+        Marshal.FreeHGlobal(num);
+
+        return bytesRead;
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        if (Disposed)
+            throw new ObjectDisposedException("ProcessMemoryStream");
+
+        switch (origin)
         {
-            if (!Disposed)
-            {
-                if (AccessHandle != IntPtr.Zero)
-                {
-                    NativeMethods.CloseHandle(AccessHandle);
-                    AccessHandle = IntPtr.Zero;
-                }
+            case SeekOrigin.Begin:
+                Position = offset;
 
-                base.Dispose(disposing);
-            }
+                break;
+            case SeekOrigin.Current:
+                Position += offset;
 
-            Disposed = true;
+                break;
+            case SeekOrigin.End:
+                throw new NotSupportedException("SeekOrigin.End not supported.");
         }
 
-        public override void Flush() => throw new NotSupportedException("Flush is not supported.");
+        return Position;
+    }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (Disposed)
-                throw new ObjectDisposedException("ProcessMemoryStream");
+    public override void SetLength(long value) => throw new NotSupportedException("Cannot set the length for this stream.");
 
-            if (AccessHandle == IntPtr.Zero)
-                throw new InvalidOperationException("Process is not open.");
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        if (Disposed)
+            throw new ObjectDisposedException("ProcessMemoryStream");
 
-            var num = Marshal.AllocHGlobal(count);
+        if (AccessHandle == IntPtr.Zero)
+            throw new InvalidOperationException("Process is not open.");
 
-            if (num == IntPtr.Zero)
-                throw new InvalidOperationException("Unable to allocate memory.");
+        var num = Marshal.AllocHGlobal(count);
 
-            NativeMethods.ReadProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out var bytesRead);
-            Position += bytesRead;
-            Marshal.Copy(num, buffer, offset, count);
-            Marshal.FreeHGlobal(num);
+        if (num == IntPtr.Zero)
+            throw new InvalidOperationException("Unable to allocate memory.");
 
-            return bytesRead;
-        }
+        Marshal.Copy(buffer, offset, num, count);
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            if (Disposed)
-                throw new ObjectDisposedException("ProcessMemoryStream");
+        NativeMethods.WriteProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out var bytesWritten);
+        Position += bytesWritten;
 
-            switch (origin)
-            {
-                case SeekOrigin.Begin:
-                    Position = offset;
+        Marshal.FreeHGlobal(num);
+    }
 
-                    break;
-                case SeekOrigin.Current:
-                    Position += offset;
+    public override void WriteByte(byte value) => Write(new[] { value }, 0, 1);
 
-                    break;
-                case SeekOrigin.End:
-                    throw new NotSupportedException("SeekOrigin.End not supported.");
-            }
-
-            return Position;
-        }
-
-        public override void SetLength(long value) => throw new NotSupportedException("Cannot set the length for this stream.");
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            if (Disposed)
-                throw new ObjectDisposedException("ProcessMemoryStream");
-
-            if (AccessHandle == IntPtr.Zero)
-                throw new InvalidOperationException("Process is not open.");
-
-            var num = Marshal.AllocHGlobal(count);
-
-            if (num == IntPtr.Zero)
-                throw new InvalidOperationException("Unable to allocate memory.");
-
-            Marshal.Copy(buffer, offset, num, count);
-
-            NativeMethods.WriteProcessMemory(AccessHandle, (IntPtr)Position, num, (IntPtr)count, out var bytesWritten);
-            Position += bytesWritten;
-
-            Marshal.FreeHGlobal(num);
-        }
-
-        public override void WriteByte(byte value) => Write(new[] { value }, 0, 1);
-
-        public void WriteString(string value)
-        {
-            var bytes = Encoding.ASCII.GetBytes(value);
-            Write(bytes, 0, bytes.Length);
-        }
+    public void WriteString(string value)
+    {
+        var bytes = Encoding.ASCII.GetBytes(value);
+        Write(bytes, 0, bytes.Length);
     }
 }

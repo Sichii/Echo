@@ -1,93 +1,94 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net6.0-windows</TargetFramework>
-        <UseWindowsForms>true</UseWindowsForms>
-        <AssemblyTitle>Echo</AssemblyTitle>
-        <Company>Sichi</Company>
-        <Product>Echo</Product>
-        <Description>Window management application for Dark Ages</Description>
-        <Copyright>Copyright © 2018</Copyright>
-        <LangVersion>latest</LangVersion>
-    </PropertyGroup>
-    <PropertyGroup>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
-    </PropertyGroup>
-    <PropertyGroup>
-        <ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
-        <StartupObject></StartupObject>
-        <Nullable>disable</Nullable>
-        <AssemblyVersion>1.0.0.1</AssemblyVersion>
-        <FileVersion>1.0.0.1</FileVersion>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <Prefer32Bit>true</Prefer32Bit>
-      <PlatformTarget>x86</PlatformTarget>
-      <WarningLevel>5</WarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <PlatformTarget>x86</PlatformTarget>
-      <Prefer32bit>true</Prefer32bit>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <WarningLevel>5</WarningLevel>
-    </PropertyGroup>
-    <ItemGroup>
-        <Compile Update="Forms\MainForm.cs" />
-        <Compile Update="Forms\MainForm.Designer.cs">
-            <DependentUpon>MainForm.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Forms\MessageDialog.cs" />
-        <Compile Update="Forms\MessageDialog.Designer.cs">
-            <DependentUpon>MessageDialog.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Forms\OptionsForm.cs" />
-        <Compile Update="Forms\OptionsForm.Designer.cs">
-            <DependentUpon>OptionsForm.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Forms\Thumbnail.cs" />
-        <Compile Update="Forms\Thumbnail.Designer.cs">
-            <DependentUpon>Thumbnail.cs</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="Forms\MainForm.resx">
-            <DependentUpon>MainForm.cs</DependentUpon>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Forms\MessageDialog.resx">
-            <DependentUpon>MessageDialog.cs</DependentUpon>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Forms\OptionsForm.resx">
-            <DependentUpon>OptionsForm.cs</DependentUpon>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Forms\Thumbnail.resx">
-            <DependentUpon>Thumbnail.cs</DependentUpon>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Properties\Resources.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-            <SubType>Designer</SubType>
-        </EmbeddedResource>
-        <Compile Update="Properties\Resources.Designer.cs">
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Resources.resx</DependentUpon>
-            <DesignTime>True</DesignTime>
-        </Compile>
-        <None Include="app.manifest">
-            <SubType>Designer</SubType>
-        </None>
-        <None Include="Properties\Settings.settings">
-            <Generator>SettingsSingleFileGenerator</Generator>
-            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-        </None>
-        <Compile Update="Properties\Settings.Designer.cs">
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Settings.settings</DependentUpon>
-            <DesignTimeSharedInput>True</DesignTimeSharedInput>
-        </Compile>
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="Resources\dawnd.dll" />
-    </ItemGroup>
-    <ItemGroup>
-        <Content Include="Resources\dawindower.ico" />
-    </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AssemblyTitle>Echo</AssemblyTitle>
+		<Company>Sichi</Company>
+		<Product>Echo</Product>
+		<Description>Window management application for Dark Ages</Description>
+		<Copyright>Copyright © 2018</Copyright>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+	<PropertyGroup>
+		<ApplicationIcon>Resources\dawindower.ico</ApplicationIcon>
+		<StartupObject></StartupObject>
+		<Nullable>enable</Nullable>
+		<AssemblyVersion>1.0.0.1</AssemblyVersion>
+		<FileVersion>1.0.0.1</FileVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Prefer32Bit>true</Prefer32Bit>
+		<PlatformTarget>x86</PlatformTarget>
+		<WarningLevel>5</WarningLevel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<PlatformTarget>x86</PlatformTarget>
+		<Prefer32bit>true</Prefer32bit>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<WarningLevel>5</WarningLevel>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Update="Forms\MainForm.cs" />
+		<Compile Update="Forms\MainForm.Designer.cs">
+			<DependentUpon>MainForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\MessageDialog.cs" />
+		<Compile Update="Forms\MessageDialog.Designer.cs">
+			<DependentUpon>MessageDialog.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\OptionsForm.cs" />
+		<Compile Update="Forms\OptionsForm.Designer.cs">
+			<DependentUpon>OptionsForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\Thumbnail.cs" />
+		<Compile Update="Forms\Thumbnail.Designer.cs">
+			<DependentUpon>Thumbnail.cs</DependentUpon>
+		</Compile>
+		<EmbeddedResource Update="Forms\MainForm.resx">
+			<DependentUpon>MainForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\MessageDialog.resx">
+			<DependentUpon>MessageDialog.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\OptionsForm.resx">
+			<DependentUpon>OptionsForm.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Forms\Thumbnail.resx">
+			<DependentUpon>Thumbnail.cs</DependentUpon>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+		</Compile>
+		<None Include="app.manifest">
+			<SubType>Designer</SubType>
+		</None>
+		<None Include="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Resources\dawnd.dll" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Resources\dawindower.ico" />
+	</ItemGroup>
 </Project>
