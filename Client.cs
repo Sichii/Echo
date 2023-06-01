@@ -104,15 +104,28 @@ internal class Client : IDisposable
     {
         lock (MainForm.Sync)
         {
-            var dir = Settings.Instance.DarkAgesPath;
-            var dirDawn = Settings.Instance.DarkAgesPath.Replace("Darkages.exe", "dawnd.dll");
+            var path = Settings.Instance.DarkAgesPath;
+            var dir = Path.GetDirectoryName(path)!;
+            var dirDawn = Path.Combine(dir, "dawnd.dll");
+            var ddrawPath = Path.Combine(dir, "ddraw.dll");
 
             //correct path if required
-            if (!File.Exists(dir))
+            if (!File.Exists(path))
             {
                 MessageDialog.Show(mainform, "Could not locate Darkages.exe", "Darkages Path Error");
 
                 return null;
+            }
+
+            if (Settings.Instance.UseDDrawCompat)
+            {
+                if (!File.Exists(ddrawPath))
+                    File.WriteAllBytes(ddrawPath, Resources.ddraw);
+            }
+            else
+            {
+                if (File.Exists(ddrawPath))
+                    File.Delete(ddrawPath);
             }
 
             //check for dawnd, if it's not there then write it
@@ -123,7 +136,9 @@ internal class Client : IDisposable
             var startupInfo = new StartupInfo();
             startupInfo.Size = Marshal.SizeOf(startupInfo);
 
-            NativeMethods.CreateProcess(dir, null, IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.Suspended, IntPtr.Zero, null,
+            NativeMethods.CreateProcess(path, null, IntPtr.Zero, IntPtr.Zero, false, 
+                ProcessCreationFlags.Suspended | ProcessCreationFlags.DetachedProcess | ProcessCreationFlags.NewProcessGroup, 
+                IntPtr.Zero, dir,
                 ref startupInfo, out var procInfo);
 
             var client = new Client(mainform, procInfo.ProcessId, procInfo.ThreadHandle);
@@ -299,6 +314,12 @@ internal class Client : IDisposable
                 continue;
 
             break;
+        }
+
+        if(Settings.Instance.UseDDrawCompat)
+        {
+            Process.Start(Application.ExecutablePath);
+            Environment.Exit(0);
         }
     }
 

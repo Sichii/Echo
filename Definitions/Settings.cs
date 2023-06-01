@@ -29,6 +29,20 @@ internal sealed class Settings : ApplicationSettingsBase
         set => this["SizeSelection"] = value;
     }
 
+    [UserScopedSetting, DebuggerNonUserCode, DefaultSettingValue("True")]
+    public bool UseDawnd
+    {
+        get => (bool)this["UseDawnd"];
+        set => this["UseDawnd"] = value;
+    }
+
+    [UserScopedSetting, DebuggerNonUserCode, DefaultSettingValue("True")]
+    public bool UseDDrawCompat
+    {
+        get => (bool)this["UseDDrawCompat"];
+        set => this["UseDDrawCompat"] = value;
+    }
+
     public static Settings Instance { get; } = (Settings)Synchronized(new Settings());
     public static Settings Default { get; } = new();
 }

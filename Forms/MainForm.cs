@@ -11,6 +11,8 @@ using System.Windows.Forms;
 using Echo.Configuration;
 using Echo.Definitions;
 using Echo.PInvoke;
+using Echo.Properties;
+using Settings = Echo.Definitions.Settings;
 
 namespace Echo;
 
@@ -121,8 +123,10 @@ public partial class MainForm : Form
         if (client == null)
             return;
 
+        var processPtr = NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, client.ProcessId);
+
         //create access handle and inject dawnd
-        if (!InjectDll(NativeMethods.OpenProcess(ProcessAccessFlags.FullAccess, true, client.ProcessId)))
+        if (Settings.Instance.UseDawnd && !InjectDll(processPtr))
             return;
 
         //resume process thread

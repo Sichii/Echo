@@ -11,6 +11,8 @@ internal partial class OptionsForm : Form
     {
         InitializeComponent();
         darkAgesPath.Text = Settings.Instance.DarkAgesPath;
+        UseDawndCbox.Checked = Settings.Instance.UseDawnd;
+        UseDDrawCompatCbox.Checked = Settings.Instance.UseDDrawCompat;
     }
 
     private void BrowseDADirectoryButton_Click(object sender, EventArgs e)
@@ -30,6 +32,8 @@ internal partial class OptionsForm : Form
     public void Save()
     {
         Settings.Instance.DarkAgesPath = darkAgesPath.Text;
+        Settings.Instance.UseDawnd = UseDawndCbox.Checked;
+        Settings.Instance.UseDDrawCompat = UseDDrawCompatCbox.Checked;
         Settings.Instance.Save();
     }
 
